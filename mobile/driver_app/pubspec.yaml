@@ -1,0 +1,22 @@
+name: mle_driver
+description: Making Life Easier driver application.
+version: 0.1.0+1
+publish_to: none
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  mle_ui:
+    path: ../mle_ui
+  mle_api:
+    path: ../mle_api
+  flutter_riverpod: ^2.6.1
+  geolocator: ^13.0.2
+  image_picker: ^1.1.2
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+flutter:
+  uses-material-design: true

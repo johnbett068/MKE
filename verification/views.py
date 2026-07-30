@@ -2,6 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status
+from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import ValidationError
 
 from .models import Verification
 from .serializers import (
@@ -42,17 +44,20 @@ class AdminReviewVerificationView(APIView):
     permission_classes = [IsAdminUser]
 
     def post(self, request, verification_id):
-        verification = Verification.objects.get(id=verification_id)
+        verification = get_object_or_404(Verification, id=verification_id)
 
         status_value = request.data.get('status')
         comment = request.data.get('comment', '')
 
-        verification = VerificationService.review_verification(
-            verification=verification,
-            admin_user=request.user,
-            status=status_value,
-            comment=comment
-        )
+        try:
+            verification = VerificationService.review_verification(
+                verification=verification,
+                admin_user=request.user,
+                status=status_value,
+                comment=comment
+            )
+        except ValueError as exc:
+            raise ValidationError({"status": str(exc)}) from exc
 
         return Response(
             VerificationSerializer(verification).data

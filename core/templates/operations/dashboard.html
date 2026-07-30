@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="refresh" content="15">
+  <title>MLE Operations</title>
+  <style>
+    :root {
+      --orange:#ff8c00;--orange-soft:#fff7ed;--blue:#155eef;
+      --navy:#0b1f3a;--canvas:#f7f9fc;--surface:#fff;
+      --text:#101828;--muted:#667085;--border:#e4e7ec;
+      --green:#12b76a;--red:#d92d20;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--canvas);color:var(--text);
+      font:14px/1.5 Inter,system-ui,sans-serif}
+    header{background:var(--navy);color:white;padding:18px 28px;
+      display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}
+    .mark{width:36px;height:36px;border-radius:12px;background:linear-gradient(
+      135deg,var(--orange),#ff6b35 45%,var(--blue));display:grid;place-items:center}
+    header a{color:white;text-decoration:none;opacity:.82}
+    main{max-width:1440px;margin:auto;padding:28px}
+    .hero{display:flex;justify-content:space-between;align-items:end;margin-bottom:22px}
+    h1{font-size:28px;line-height:1.2;margin:0 0 6px}.muted{color:var(--muted)}
+    .live{display:flex;align-items:center;gap:8px;color:var(--green);font-weight:700}
+    .dot{width:9px;height:9px;border-radius:50%;background:var(--green);
+      box-shadow:0 0 0 5px #12b76a20}
+    .metrics{display:grid;grid-template-columns:repeat(6,minmax(150px,1fr));
+      gap:14px;margin-bottom:22px}
+    .card{background:var(--surface);border:1px solid var(--border);
+      border-radius:18px;padding:18px;box-shadow:0 6px 24px #10182808}
+    .metric strong{display:block;font-size:25px;margin-top:8px}
+    .accent{border-top:3px solid var(--orange)}
+    .queue{color:var(--orange);font-weight:800}
+    .section-head{display:flex;justify-content:space-between;align-items:center;
+      margin-bottom:14px}
+    h2{font-size:18px;margin:0}
+    .button{background:var(--orange);color:white;text-decoration:none;
+      padding:10px 14px;border-radius:11px;font-weight:750}
+    table{width:100%;border-collapse:collapse}
+    th{text-align:left;color:var(--muted);font-size:12px;text-transform:uppercase;
+      letter-spacing:.04em;padding:11px 10px;border-bottom:1px solid var(--border)}
+    td{padding:13px 10px;border-bottom:1px solid var(--border)}
+    tr:last-child td{border:0}
+    .badge{display:inline-flex;padding:5px 9px;border-radius:999px;font-weight:750;
+      background:#eff6ff;color:var(--blue)}
+    .requested{background:var(--orange-soft);color:#b85f00}
+    .in_progress{background:#ecfdf3;color:#027a48}
+    .empty{text-align:center;padding:42px;color:var(--muted)}
+    @media(max-width:1050px){.metrics{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:680px){main{padding:18px}.metrics{grid-template-columns:1fr 1fr}
+      .hero{align-items:start;gap:12px;flex-direction:column}.table-wrap{overflow:auto}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span class="mark">M</span> Making Life Easier</div>
+    <a href="/admin/">Administration →</a>
+  </header>
+  <main>
+    <div class="hero">
+      <div><h1>Operations overview</h1>
+        <div class="muted">Mobility pilot control centre · refreshes every 15 seconds</div>
+      </div>
+      <div class="live"><span class="dot"></span> Live monitoring</div>
+    </div>
+    <section class="metrics">
+      <div class="card metric accent"><span class="muted">Online drivers</span>
+        <strong>{{ online_drivers }}</strong></div>
+      <div class="card metric"><span class="muted">Available now</span>
+        <strong>{{ available_drivers }}</strong></div>
+      <div class="card metric"><span class="muted">Driver applications</span>
+        <strong class="queue">{{ pending_applications }}</strong></div>
+      <div class="card metric"><span class="muted">Documents to review</span>
+        <strong class="queue">{{ pending_documents }}</strong></div>
+      <div class="card metric"><span class="muted">Completed trips</span>
+        <strong>{{ completed_trips }}</strong></div>
+      <div class="card metric"><span class="muted">Gross bookings</span>
+        <strong>KES {{ gross_bookings }}</strong></div>
+    </section>
+    <section class="card">
+      <div class="section-head"><div><h2>Active trips</h2>
+        <span class="muted">Requested, accepted, and in progress</span></div>
+        <a class="button" href="/admin/drivers/driverapplication/">Review queue</a>
+      </div>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>Trip</th><th>Customer</th><th>Driver</th>
+          <th>Journey</th><th>Status</th><th>Created</th></tr></thead>
+        <tbody>
+        {% for trip in active_trips %}
+          <tr><td><strong>#{{ trip.id }}</strong></td>
+            <td>{{ trip.customer.first_name|default:trip.customer.email }}</td>
+            <td>{{ trip.driver.first_name|default:trip.driver.email|default:"Matching…" }}</td>
+            <td>{{ trip.origin.zone|default:trip.origin.town }} →
+              {{ trip.destination.zone|default:trip.destination.town }}</td>
+            <td><span class="badge {{ trip.status }}">{{ trip.get_status_display }}</span></td>
+            <td>{{ trip.created_at|timesince }} ago</td></tr>
+        {% empty %}
+          <tr><td colspan="6" class="empty">No active trips right now.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

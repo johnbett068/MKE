@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from accounts.models import Account, Role
 
 
@@ -34,6 +35,20 @@ class Wallet(models.Model):
 
     class Meta:
         unique_together = ('account', 'role')
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(available_balance__gte=0),
+                name="wallet_available_balance_nonnegative",
+            ),
+            models.CheckConstraint(
+                condition=Q(pending_balance__gte=0),
+                name="wallet_pending_balance_nonnegative",
+            ),
+            models.CheckConstraint(
+                condition=Q(debt_balance__gte=0),
+                name="wallet_debt_balance_nonnegative",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.account} - {self.role.name} Wallet"
@@ -71,7 +86,21 @@ class Transaction(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(amount__gt=0),
+                name="wallet_transaction_amount_positive",
+            ),
+            models.UniqueConstraint(
+                fields=[
+                    "wallet",
+                    "transaction_type",
+                    "service",
+                    "reference_id",
+                ],
+                name="wallet_transaction_operation_unique",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.transaction_type.upper()} {self.amount}"
-    

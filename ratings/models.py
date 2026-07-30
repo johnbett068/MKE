@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from accounts.models import Account
 
 
@@ -33,6 +34,12 @@ class Rating(models.Model):
             'service',
             'reference_id'
         )
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(score__gte=1, score__lte=5),
+                name="rating_score_between_1_and_5",
+            )
+        ]
 
     def __str__(self):
         return f"{self.score} ⭐ from {self.rater}"

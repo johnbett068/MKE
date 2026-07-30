@@ -1,26 +1,21 @@
 import os
-from django.core.asgi import get_asgi_application
-
-from channels.routing import ProtocolTypeRouter, URLRouter
-from channels.auth import AuthMiddlewareStack
-
-import drivers.routing  # Make sure this exists with websocket_urlpatterns
-
-# Set default settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'making_life_easier.settings')
 
-# Standard Django ASGI application for HTTP
+from channels.routing import ProtocolTypeRouter, URLRouter
+from django.core.asgi import get_asgi_application
+
 django_asgi_app = get_asgi_application()
 
-# Channels application
-application = ProtocolTypeRouter({
-    # Django's HTTP handling
-    "http": django_asgi_app,
+from core.websocket_auth import JWTAuthMiddleware  # noqa: E402
+import drivers.routing  # noqa: E402
+import rides.routing  # noqa: E402
 
-    # WebSocket handling
-    "websocket": AuthMiddlewareStack(
+application = ProtocolTypeRouter({
+    "http": django_asgi_app,
+    "websocket": JWTAuthMiddleware(
         URLRouter(
             drivers.routing.websocket_urlpatterns
+            + rides.routing.websocket_urlpatterns
         )
     ),
 })

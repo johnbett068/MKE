@@ -1,7 +1,9 @@
 from django.db import models
+from django.conf import settings
+from django.utils import timezone
 from accounts.models import Account
 from core.models import Location
-from .chat_models import RideMessage
+from .chat_models import RideMessage  # noqa: F401
 
 
 # ---------------------------------------------------
@@ -14,6 +16,10 @@ class Vehicle(models.Model):
         related_name='vehicles'
     )
     type = models.CharField(max_length=50)  # car, bike, van etc
+    make = models.CharField(max_length=50, blank=True)
+    model = models.CharField(max_length=50, blank=True)
+    year = models.PositiveSmallIntegerField(null=True, blank=True)
+    capacity = models.PositiveSmallIntegerField(default=4)
     license_plate = models.CharField(max_length=20, unique=True)
     color = models.CharField(max_length=20, blank=True)
     is_active = models.BooleanField(default=True)
@@ -39,6 +45,10 @@ class Trip(models.Model):
         ('in_progress', 'In Progress'),
         ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
+    ]
+    PAYMENT_METHOD_CHOICES = [
+        ('cash', 'Cash'),
+        ('wallet', 'Wallet'),
     ]
 
     customer = models.ForeignKey(
@@ -98,12 +108,32 @@ class Trip(models.Model):
         null=True,
         blank=True
     )
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PAYMENT_METHOD_CHOICES,
+        default='cash'
+    )
+    quoted_fare = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    arrived_at = models.DateTimeField(null=True, blank=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.trip_type.capitalize()} #{self.id} ({self.status})"
+
+    @property
+    def city(self):
+        return self.origin.town
 
 
 # ---------------------------------------------------
@@ -184,6 +214,7 @@ class Ride(models.Model):
         null=True,
         blank=True
     )
+    start_pin_hash = models.CharField(max_length=64, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -253,3 +284,104 @@ class CancellationConfig(models.Model):
 
     def __str__(self):
         return "Cancellation Config"
+
+
+class FareQuote(models.Model):
+    customer = models.ForeignKey(
+        Account,
+        on_delete=models.CASCADE,
+        related_name="fare_quotes",
+    )
+    origin = models.ForeignKey(
+        Location,
+        on_delete=models.CASCADE,
+        related_name="quotes_from",
+    )
+    destination = models.ForeignKey(
+        Location,
+        on_delete=models.CASCADE,
+        related_name="quotes_to",
+    )
+    service_type = models.CharField(max_length=10, choices=Trip.TRIP_TYPE_CHOICES)
+    pickup_latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    pickup_longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    dropoff_latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    dropoff_longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    distance_km = models.DecimalField(max_digits=8, decimal_places=2)
+    duration_minutes = models.DecimalField(max_digits=8, decimal_places=2)
+    fare = models.DecimalField(max_digits=10, decimal_places=2)
+    route_source = models.CharField(max_length=30)
+    expires_at = models.DateTimeField()
+    consumed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def is_usable(self):
+        return self.consumed_at is None and self.expires_at > timezone.now()
+
+
+class TripOffer(models.Model):
+    STATUS_CHOICES = (
+        ("pending", "Pending"),
+        ("accepted", "Accepted"),
+        ("rejected", "Rejected"),
+        ("expired", "Expired"),
+        ("withdrawn", "Withdrawn"),
+    )
+
+    trip = models.ForeignKey(
+        Trip,
+        on_delete=models.CASCADE,
+        related_name="offers",
+    )
+    driver = models.ForeignKey(
+        Account,
+        on_delete=models.CASCADE,
+        related_name="trip_offers",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending",
+    )
+    distance_to_pickup_km = models.DecimalField(max_digits=8, decimal_places=2)
+    expires_at = models.DateTimeField()
+    responded_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("trip", "driver"),
+                name="one_offer_per_trip_driver",
+            )
+        ]
+
+    @property
+    def is_actionable(self):
+        return self.status == "pending" and self.expires_at > timezone.now()
+
+
+class TripCancellation(models.Model):
+    trip = models.OneToOneField(
+        Trip,
+        on_delete=models.CASCADE,
+        related_name="cancellation",
+    )
+    cancelled_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="trip_cancellations",
+    )
+    reason = models.CharField(max_length=255, blank=True)
+    fee_amount = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    fee_status = models.CharField(
+        max_length=20,
+        choices=(
+            ("not_applicable", "Not applicable"),
+            ("due", "Due"),
+            ("paid", "Paid"),
+        ),
+        default="not_applicable",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)

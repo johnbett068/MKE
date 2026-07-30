@@ -1,6 +1,7 @@
 # pricing/models.py
 
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 
 
@@ -38,7 +39,21 @@ class PricingRule(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('city', 'service_type', 'active')
+        constraints = [
+            models.UniqueConstraint(
+                fields=("city", "service_type"),
+                condition=Q(active=True),
+                name="one_active_pricing_rule_per_city_service",
+            ),
+            models.CheckConstraint(
+                condition=Q(
+                    base_fare__gte=0,
+                    per_km_rate__gte=0,
+                    per_minute_rate__gte=0,
+                ),
+                name="pricing_rates_nonnegative",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.city} - {self.service_type}"

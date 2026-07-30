@@ -1,0 +1,138 @@
+name: mke-production
+
+x-backend: &backend
+  build:
+    context: .
+    dockerfile: Dockerfile
+  image: mke-backend:${MKE_IMAGE_TAG:-latest}
+  env_file:
+    - .env.production
+  environment:
+    REDIS_URL: redis://redis:6379/0
+  restart: unless-stopped
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  volumes:
+    - static_data:/app/staticfiles
+    - media_data:/app/media
+  networks:
+    - backend
+
+services:
+  db:
+    image: postgis/postgis:17-3.5
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./deploy/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - backend
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - backend
+
+  web:
+    <<: *backend
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      MKE_RUN_STARTUP_TASKS: "1"
+    command:
+      - daphne
+      - --bind
+      - 0.0.0.0
+      - --port
+      - "8000"
+      - --proxy-headers
+      - making_life_easier.asgi:application
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; r=urllib.request.Request('http://127.0.0.1:8000/health/', headers={'X-Forwarded-Proto':'https'}); urllib.request.urlopen(r, timeout=5)"
+      interval: 15s
+      timeout: 7s
+      retries: 10
+      start_period: 30s
+
+  outbox:
+    <<: *backend
+    command: ["python", "manage.py", "publish_outbox", "--watch", "--interval", "1"]
+    depends_on:
+      web:
+        condition: service_healthy
+
+  maintenance:
+    <<: *backend
+    command: ["python", "manage.py", "run_maintenance", "--interval", "15"]
+    depends_on:
+      web:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.29-alpine
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN}
+      NGINX_UPSTREAM: web:8000
+    depends_on:
+      web:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - static_data:/app/staticfiles:ro
+      - media_data:/app/media:ro
+      - certbot_data:/etc/letsencrypt:ro
+      - certbot_web:/var/www/certbot:ro
+    networks:
+      - backend
+      - edge
+
+  certbot:
+    image: certbot/certbot:v4.2.0
+    profiles: ["certificate"]
+    ports:
+      - "80:80"
+    volumes:
+      - certbot_data:/etc/letsencrypt
+      - certbot_web:/var/www/certbot
+    networks:
+      - edge
+
+volumes:
+  postgres_data:
+  redis_data:
+  static_data:
+  media_data:
+  certbot_data:
+  certbot_web:
+
+networks:
+  backend:
+    internal: true
+  edge:

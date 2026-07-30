@@ -4,6 +4,12 @@ from .models import Verification
 
 
 class VerificationService:
+    LEVEL_BY_TYPE = {
+        "phone": 1,
+        "national_id": 2,
+        "vehicle": 3,
+        "business": 3,
+    }
 
     @staticmethod
     @transaction.atomic
@@ -23,9 +29,18 @@ class VerificationService:
         status,
         comment=""
     ):
+        valid_statuses = {"approved", "rejected"}
+        if status not in valid_statuses:
+            raise ValueError("Status must be approved or rejected.")
         verification.status = status
         verification.reviewed_by = admin_user
         verification.reviewed_at = timezone.now()
         verification.admin_comment = comment
         verification.save()
+        if status == "approved":
+            profile = verification.account.profile
+            level = VerificationService.LEVEL_BY_TYPE[verification.verification_type]
+            if profile.verification_level < level:
+                profile.verification_level = level
+                profile.save(update_fields=["verification_level"])
         return verification

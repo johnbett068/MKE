@@ -1,54 +1,57 @@
-# rides/consumers.py
-
 import json
+
 from channels.generic.websocket import AsyncWebsocketConsumer
+from django.db import models
+
+from core.events import event_envelope, trip_group
+from .models import Trip
 
 
-class RideTrackingConsumer(AsyncWebsocketConsumer):
-    """
-    WebSocket consumer for real-time ride tracking.
-    Drivers or backend can broadcast ride updates (location, status, etc.)
-    to the customer in real-time.
-    """
-
+class TripStreamConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.ride_id = self.scope['url_route']['kwargs']['ride_id']
-        self.room_group_name = f'ride_{self.ride_id}'
-
-        # Join the ride-specific group
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name
-        )
-
+        self.trip_id = int(self.scope["url_route"]["kwargs"]["trip_id"])
+        self.group_name = trip_group(self.trip_id)
+        user = self.scope.get("user")
+        if not user or not user.is_authenticated:
+            await self.close(code=4401)
+            return
+        is_participant = await Trip.objects.filter(id=self.trip_id).filter(
+            models.Q(customer_id=user.id) | models.Q(driver_id=user.id)
+        ).aexists()
+        if not is_participant:
+            await self.close(code=4403)
+            return
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
+        await self.send(
+            text_data=json.dumps(
+                event_envelope(
+                    "connection_ready",
+                    "trip",
+                    self.trip_id,
+                    {"stream": "trip"},
+                )
+            )
+        )
 
     async def disconnect(self, close_code):
-        # Leave the ride-specific group
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
+        if hasattr(self, "group_name"):
+            await self.channel_layer.group_discard(
+                self.group_name,
+                self.channel_name,
+            )
+
+    async def receive(self, text_data=None, bytes_data=None):
+        await self.send(
+            text_data=json.dumps(
+                event_envelope(
+                    "protocol_error",
+                    "trip",
+                    self.trip_id,
+                    {"detail": "The trip stream is server-to-client only."},
+                )
+            )
         )
 
-    async def receive(self, text_data):
-        """
-        Optional: handle incoming messages from client.
-        Currently pass-through; future expansion can handle location pings or custom events.
-        """
-        pass
-
-    async def ride_event(self, event):
-        """
-        Receives broadcast events from server (e.g., location updates, ride status changes)
-        and sends them to the connected WebSocket client.
-        Event structure:
-        {
-            "type": "ride_event",
-            "event_type": "<custom_event_type>",
-            "data": {...}
-        }
-        """
-        await self.send(text_data=json.dumps({
-            "type": event.get("event_type"),
-            "data": event.get("data"),
-        }))
+    async def realtime_event(self, event):
+        await self.send(text_data=json.dumps(event["envelope"]))
