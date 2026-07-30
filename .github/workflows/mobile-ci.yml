@@ -1,0 +1,108 @@
+name: Mobile analysis and release builds
+
+on:
+  push:
+    branches: ["main"]
+    tags:
+      - "v*"
+  pull_request:
+    paths:
+      - "mobile/**"
+      - ".github/workflows/mobile-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [customer_app, driver_app]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Generate native runners
+        working-directory: mobile/${{ matrix.app }}
+        run: flutter create --platforms=android,ios .
+      - name: Resolve dependencies
+        working-directory: mobile/${{ matrix.app }}
+        run: flutter pub get
+      - name: Analyze
+        working-directory: mobile/${{ matrix.app }}
+        run: flutter analyze --fatal-infos
+
+  android-release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: analyze
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      matrix:
+        app: [customer_app, driver_app]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Generate Android runner
+        working-directory: mobile/${{ matrix.app }}
+        run: flutter create --platforms=android .
+      - name: Build release APK
+        working-directory: mobile/${{ matrix.app }}
+        run: >-
+          flutter build apk --release
+          --dart-define=MLE_API_URL=${{ vars.MLE_API_URL }}
+          --dart-define=MLE_WS_URL=${{ vars.MLE_WS_URL }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mke-${{ matrix.app }}-${{ github.ref_name }}-android
+          path: mobile/${{ matrix.app }}/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 30
+
+  ios-runner:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: analyze
+    runs-on: macos-latest
+    timeout-minutes: 40
+    strategy:
+      matrix:
+        app: [customer_app, driver_app]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Generate iOS runner
+        working-directory: mobile/${{ matrix.app }}
+        run: flutter create --platforms=ios .
+      - name: Build unsigned iOS runner
+        working-directory: mobile/${{ matrix.app }}
+        run: >-
+          flutter build ios --release --no-codesign
+          --dart-define=MLE_API_URL=${{ vars.MLE_API_URL }}
+          --dart-define=MLE_WS_URL=${{ vars.MLE_WS_URL }}
+      - name: Archive runner bundle
+        run: >-
+          ditto -c -k --sequesterRsrc --keepParent
+          mobile/${{ matrix.app }}/build/ios/iphoneos/Runner.app
+          mke-${{ matrix.app }}-${{ github.ref_name }}-ios-runner.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mke-${{ matrix.app }}-${{ github.ref_name }}-ios
+          path: mke-${{ matrix.app }}-${{ github.ref_name }}-ios-runner.zip
+          if-no-files-found: error
+          retention-days: 30

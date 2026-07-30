@@ -10,12 +10,17 @@ class CommissionService:
     @staticmethod
     def get_active_rule(service_type, role):
         today = date.today()
-
+        filters = {
+            "service_type": service_type,
+            "is_active": True,
+            "effective_from__lte": today,
+        }
+        if isinstance(role, str):
+            filters["role__name"] = role
+        else:
+            filters["role"] = role
         return CommissionRule.objects.filter(
-            service_type=service_type,
-            role=role,
-            is_active=True,
-            effective_from__lte=today
+            **filters
         ).order_by('-effective_from').first()
 
     @staticmethod

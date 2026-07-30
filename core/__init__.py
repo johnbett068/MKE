@@ -1,3 +1,6 @@
-from .celery import app as celery_app
+"""Shared platform primitives.
 
-__all__ = ("celery_app",)
+Celery will be enabled when the first durable worker workflow is introduced.
+Keeping it optional prevents every Django command from depending on an
+otherwise unconfigured task queue.
+"""

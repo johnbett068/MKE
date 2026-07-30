@@ -1,0 +1,11 @@
+name: mle_api
+description: Shared MLE REST, authentication, DTO, and real-time client layer.
+version: 0.1.0
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+dependencies:
+  dio: ^5.7.0
+  flutter:
+    sdk: flutter
+  flutter_secure_storage: ^9.2.2
+  web_socket_channel: ^3.0.1

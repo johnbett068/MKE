@@ -1,110 +1,218 @@
-# drivers/consumers.py
-
 import json
+
+from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
-from django.utils import timezone
-from asgiref.sync import sync_to_async
+from django.core.exceptions import ObjectDoesNotExist
+
+from core.events import driver_group, event_envelope, trip_group
+from rides.models import Trip
+from rides.utils import estimate_eta_minutes, haversine_distance
 from .models import Driver
+from .services import DriverPresenceService
 
-HEARTBEAT_TIMEOUT_SECONDS = 30
 
-
-class DriverConsumer(AsyncWebsocketConsumer):
-
-    async def connect(self):
-        self.driver_id = self.scope['url_route']['kwargs']['driver_id']
-        self.group_name = f"driver_{self.driver_id}"
-
-        await self.channel_layer.group_add(
-            self.group_name,
-            self.channel_name
+@database_sync_to_async
+def update_driver_presence(user, latitude, longitude):
+    driver = DriverPresenceService.heartbeat(user, latitude, longitude)
+    trip = (
+        Trip.objects.filter(
+            driver=user,
+            status__in=["accepted", "in_progress"],
         )
+        .select_related("ride_details")
+        .first()
+    )
+    if not trip:
+        return driver, None
+    details = trip.ride_details
+    if trip.status == "accepted":
+        target_lat = details.pickup_latitude
+        target_lon = details.pickup_longitude
+    else:
+        target_lat = details.dropoff_latitude
+        target_lon = details.dropoff_longitude
+    distance = haversine_distance(
+        latitude,
+        longitude,
+        target_lat,
+        target_lon,
+    )
+    return driver, {
+        "trip_id": trip.id,
+        "latitude": latitude,
+        "longitude": longitude,
+        "distance_to_target_km": round(distance, 2),
+        "eta_minutes": estimate_eta_minutes(distance),
+    }
 
+
+@database_sync_to_async
+def execute_driver_command(user, event_type, data):
+    from rides.services import DispatchService, RideService
+
+    if event_type == "offer_accept":
+        trip = DispatchService.accept_offer(int(data["offer_id"]), user)
+        return {"trip_id": trip.id, "status": trip.status}
+    if event_type == "offer_reject":
+        from rides.models import TripOffer
+
+        offer = TripOffer.objects.get(pk=int(data["offer_id"]), driver=user)
+        DispatchService.reject_offer(offer, user)
+        return {"offer_id": offer.id, "status": offer.status}
+    trip_id = int(data["trip_id"])
+    if event_type == "driver_arrived":
+        trip = RideService.mark_arrived(trip_id, user)
+    elif event_type == "trip_start":
+        trip = RideService.start_trip(trip_id, user, str(data["pin"]))
+    elif event_type == "trip_complete":
+        trip = RideService.complete_trip(
+            trip_id,
+            user,
+            data["distance_km"],
+            data["duration_minutes"],
+        )
+    else:
+        raise ValueError("Unsupported driver command.")
+    return {"trip_id": trip.id, "status": trip.status}
+
+
+class DriverStreamConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        user = self.scope.get("user")
+        if not user or not user.is_authenticated:
+            await self.close(code=4401)
+            return
+        self.driver = await Driver.objects.filter(user_id=user.id).afirst()
+        if not self.driver:
+            await self.close(code=4403)
+            return
+        if not self.driver.is_online:
+            await self.close(code=4409)
+            return
+        self.group_name = driver_group(user.id)
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
-
-        await self.set_driver_online()
+        await self.send(
+            text_data=json.dumps(
+                event_envelope(
+                    "connection_ready",
+                    "driver",
+                    user.id,
+                    {"stream": "driver"},
+                )
+            )
+        )
 
     async def disconnect(self, close_code):
-        await self.set_driver_offline()
+        if hasattr(self, "group_name"):
+            await self.channel_layer.group_discard(
+                self.group_name,
+                self.channel_name,
+            )
 
-        await self.channel_layer.group_discard(
-            self.group_name,
-            self.channel_name
-        )
-
-    async def receive(self, text_data):
-        data = json.loads(text_data)
-
-        if data.get("type") == "heartbeat":
-            await self.update_heartbeat()
-
-        elif data.get("type") == "location_update":
-            await self.update_location(data)
-
-    async def set_driver_online(self):
-        driver = await sync_to_async(Driver.objects.get)(id=self.driver_id)
-        driver.mark_online()
-
-    async def set_driver_offline(self):
-        driver = await sync_to_async(Driver.objects.get)(id=self.driver_id)
-        driver.mark_offline()
-
-    async def update_heartbeat(self):
-        driver = await sync_to_async(Driver.objects.get)(id=self.driver_id)
-        driver.update_heartbeat()
-
-    async def update_location(self, data):
-        """
-        Update driver location and broadcast ETA if driver has an active ride.
-        """
-        driver = await sync_to_async(Driver.objects.get)(id=self.driver_id)
-
-        driver.current_latitude = data.get("latitude")
-        driver.current_longitude = data.get("longitude")
-        driver.last_seen = timezone.now()
-        await sync_to_async(driver.save)()
-
-        # Check if driver has active ride
-        from rides.models import Ride
-        from rides.utils import haversine_distance, estimate_eta_minutes
-        from rides.events import RideEventBroadcaster
-
-        active_ride = await sync_to_async(
-            Ride.objects.filter(
-                driver=driver.user,
-                status__in=['accepted', 'in_progress']
-            ).first
-        )()
-
-        if not active_ride:
+    async def receive(self, text_data=None, bytes_data=None):
+        try:
+            message = json.loads(text_data or "{}")
+        except json.JSONDecodeError:
+            await self._protocol_error("Message must be valid JSON.")
             return
-
-        # Determine target point
-        if active_ride.status == 'accepted':
-            target_lat = active_ride.pickup_latitude
-            target_lon = active_ride.pickup_longitude
-        else:
-            target_lat = active_ride.dropoff_latitude
-            target_lon = active_ride.dropoff_longitude
-
-        if not target_lat or not target_lon:
+        if message.get("schema_version") != "1.0":
+            await self._protocol_error("Unsupported schema_version.")
             return
-
-        # Calculate distance and ETA
-        distance = haversine_distance(
-            driver.current_latitude,
-            driver.current_longitude,
-            target_lat,
-            target_lon
+        event_type = message.get("type")
+        location_events = {"driver_heartbeat", "driver_location_updated"}
+        command_events = {
+            "offer_accept",
+            "offer_reject",
+            "driver_arrived",
+            "trip_start",
+            "trip_complete",
+        }
+        if event_type in command_events:
+            try:
+                result = await execute_driver_command(
+                    self.scope["user"],
+                    event_type,
+                    message.get("data") or {},
+                )
+            except (
+                KeyError,
+                TypeError,
+                ValueError,
+                PermissionError,
+                ObjectDoesNotExist,
+            ) as exc:
+                await self._protocol_error(str(exc))
+                return
+            await self.send(
+                text_data=json.dumps(
+                    event_envelope(
+                        "command_succeeded",
+                        "driver",
+                        self.scope["user"].id,
+                        {
+                            "command": event_type,
+                            "request_id": message.get("request_id"),
+                            **result,
+                        },
+                    )
+                )
+            )
+            return
+        if event_type not in location_events:
+            await self._protocol_error("Unsupported driver event type.")
+            return
+        data = message.get("data") or {}
+        try:
+            latitude = float(data["latitude"])
+            longitude = float(data["longitude"])
+            if not -90 <= latitude <= 90 or not -180 <= longitude <= 180:
+                raise ValueError
+        except (KeyError, TypeError, ValueError):
+            await self._protocol_error("Valid latitude and longitude are required.")
+            return
+        try:
+            _, location = await update_driver_presence(
+                self.scope["user"],
+                latitude,
+                longitude,
+            )
+        except ValueError as exc:
+            await self._protocol_error(str(exc))
+            return
+        await self.send(
+            text_data=json.dumps(
+                event_envelope(
+                    "driver_location_acknowledged",
+                    "driver",
+                    self.scope["user"].id,
+                    {"sequence": data.get("sequence")},
+                )
+            )
         )
-        eta = estimate_eta_minutes(distance)
+        if location:
+            envelope = event_envelope(
+                "driver_location_updated",
+                "trip",
+                location["trip_id"],
+                location,
+            )
+            await self.channel_layer.group_send(
+                trip_group(location["trip_id"]),
+                {"type": "realtime.event", "envelope": envelope},
+            )
 
-        # Broadcast ETA update
-        RideEventBroadcaster.broadcast(
-            active_ride.id,
-            "eta_update",
-            {
-                "distance_km": round(distance, 2),
-                "eta_minutes": eta
-            }
+    async def _protocol_error(self, detail):
+        await self.send(
+            text_data=json.dumps(
+                event_envelope(
+                    "protocol_error",
+                    "driver",
+                    self.scope["user"].id,
+                    {"detail": detail},
+                )
+            )
         )
+
+    async def realtime_event(self, event):
+        await self.send(text_data=json.dumps(event["envelope"]))

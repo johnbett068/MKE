@@ -6,6 +6,7 @@ from rest_framework import status
 from .models import Rating
 from .serializers import RatingSerializer, CreateRatingSerializer
 from .services import RatingService
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 
 class CreateRatingView(APIView):
@@ -15,14 +16,19 @@ class CreateRatingView(APIView):
         serializer = CreateRatingSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        rating = RatingService.create_rating(
-            rater=request.user,
-            rated_account=serializer.validated_data['rated_account'],
-            score=serializer.validated_data['score'],
-            service=serializer.validated_data['service'],
-            reference_id=serializer.validated_data['reference_id'],
-            comment=serializer.validated_data.get('comment', "")
-        )
+        try:
+            rating = RatingService.create_rating(
+                rater=request.user,
+                rated_account=serializer.validated_data['rated_account'],
+                score=serializer.validated_data['score'],
+                service=serializer.validated_data['service'],
+                reference_id=serializer.validated_data['reference_id'],
+                comment=serializer.validated_data.get('comment', "")
+            )
+        except PermissionError as exc:
+            raise PermissionDenied(str(exc)) from exc
+        except ValueError as exc:
+            raise ValidationError({"detail": str(exc)}) from exc
 
         return Response(
             RatingSerializer(rating).data,

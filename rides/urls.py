@@ -1,17 +1,36 @@
-# rides/urls.py
 from django.urls import path
+
 from .views import (
-    request_trip,
-    available_trips,
-    accept_trip,
-    update_trip_status,
-    trip_details
+    AcceptOfferView,
+    ArrivedTripView,
+    CancelTripView,
+    CompleteTripView,
+    DriverOfferListView,
+    FareQuoteCreateView,
+    RejectOfferView,
+    StartTripView,
+    TripDetailView,
+    TripListCreateView,
 )
 
+
 urlpatterns = [
-    path('request/', request_trip, name='request-trip'),
-    path('available/', available_trips, name='available-trips'),
-    path('<int:trip_id>/accept/', accept_trip, name='accept-trip'),
-    path('<int:trip_id>/status/', update_trip_status, name='update-trip-status'),
-    path('<int:trip_id>/', trip_details, name='trip-details'),
+    path("", TripListCreateView.as_view(), name="trip-list-create"),
+    path("quotes/", FareQuoteCreateView.as_view(), name="fare-quote-create"),
+    path("offers/", DriverOfferListView.as_view(), name="driver-offers"),
+    path(
+        "offers/<int:offer_id>/accept/",
+        AcceptOfferView.as_view(),
+        name="offer-accept",
+    ),
+    path(
+        "offers/<int:offer_id>/reject/",
+        RejectOfferView.as_view(),
+        name="offer-reject",
+    ),
+    path("<int:trip_id>/", TripDetailView.as_view(), name="trip-detail"),
+    path("<int:trip_id>/arrived/", ArrivedTripView.as_view(), name="trip-arrived"),
+    path("<int:trip_id>/start/", StartTripView.as_view(), name="trip-start"),
+    path("<int:trip_id>/complete/", CompleteTripView.as_view(), name="trip-complete"),
+    path("<int:trip_id>/cancel/", CancelTripView.as_view(), name="trip-cancel"),
 ]

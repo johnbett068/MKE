@@ -1,0 +1,53 @@
+name: Backend quality and tests
+
+on:
+  push:
+    branches: ["main"]
+    paths-ignore:
+      - "mobile/**"
+  pull_request:
+    paths-ignore:
+      - "mobile/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DJANGO_DEBUG: "true"
+      DJANGO_SECRET_KEY: ci-only-secret-key
+      DJANGO_FAST_PASSWORD_HASHER: "1"
+      DATABASE_URL: sqlite:///db.sqlite3
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - run: python -m pip install --upgrade pip
+      - run: pip install -r requirements-dev.txt
+      - name: Ruff
+        run: ruff check .
+      - name: Django system checks
+        run: python manage.py check
+      - name: Migration drift
+        run: python manage.py makemigrations --check --dry-run
+      - name: Backend test suite
+        run: python manage.py test --verbosity 1
+      - name: Production packaging syntax
+        run: |
+          cp .env.production.example .env.production
+          docker compose --env-file .env.production -f docker-compose.prod.yml config --quiet
+      - name: Build production image
+        run: docker build --tag mke-backend:ci .

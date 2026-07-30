@@ -4,7 +4,7 @@ from django.utils import timezone
 from datetime import timedelta
 from .models import Driver
 
-HEARTBEAT_TIMEOUT_SECONDS = 30  # If no heartbeat for 30s, mark offline
+HEARTBEAT_TIMEOUT_SECONDS = 45
 
 def mark_inactive_drivers_offline():
     """
@@ -16,7 +16,7 @@ def mark_inactive_drivers_offline():
         last_seen__lt=threshold
     )
 
+    count = inactive_drivers.count()
     for driver in inactive_drivers:
         driver.mark_offline()
-
-    print(f"{inactive_drivers.count()} drivers marked offline.")
+    return count

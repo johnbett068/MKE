@@ -1,6 +1,8 @@
 from django.urls import re_path
-from .consumers import DriverConsumer
+
+from .consumers import DriverStreamConsumer
+
 
 websocket_urlpatterns = [
-    re_path(r'ws/driver/(?P<driver_id>\d+)/$', DriverConsumer.as_asgi()),
+    re_path(r"^ws/v1/drivers/me/$", DriverStreamConsumer.as_asgi()),
 ]

@@ -1,6 +1,7 @@
 # commissions/models.py
 
 from django.db import models
+from django.db.models import Q
 from accounts.models import Role
 
 
@@ -45,6 +46,16 @@ class CommissionRule(models.Model):
 
     class Meta:
         ordering = ['-effective_from']
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(percentage__gte=0, percentage__lte=100),
+                name="commission_percentage_between_0_and_100",
+            ),
+            models.CheckConstraint(
+                condition=Q(flat_fee__gte=0),
+                name="commission_flat_fee_nonnegative",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.service_type} - {self.role.name} ({self.percentage}%)"

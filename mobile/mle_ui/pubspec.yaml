@@ -1,0 +1,8 @@
+name: mle_ui
+description: Shared Making Life Easier design system.
+version: 0.1.0
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+dependencies:
+  flutter:
+    sdk: flutter
