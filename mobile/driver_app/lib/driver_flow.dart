@@ -53,20 +53,21 @@ class DriverFlowState {
     String? error,
     bool clearOffer = false,
     bool clearError = false,
-  }) => DriverFlowState(
-    step: step ?? this.step,
-    busy: busy ?? this.busy,
-    phone: phone ?? this.phone,
-    online: online ?? this.online,
-    heartbeatHealthy: heartbeatHealthy ?? this.heartbeatHealthy,
-    applicationStatus: applicationStatus ?? this.applicationStatus,
-    documents: documents ?? this.documents,
-    offer: clearOffer ? null : (offer ?? this.offer),
-    trip: trip ?? this.trip,
-    offerSeconds: offerSeconds ?? this.offerSeconds,
-    wallet: wallet ?? this.wallet,
-    error: clearError ? null : (error ?? this.error),
-  );
+  }) =>
+      DriverFlowState(
+        step: step ?? this.step,
+        busy: busy ?? this.busy,
+        phone: phone ?? this.phone,
+        online: online ?? this.online,
+        heartbeatHealthy: heartbeatHealthy ?? this.heartbeatHealthy,
+        applicationStatus: applicationStatus ?? this.applicationStatus,
+        documents: documents ?? this.documents,
+        offer: clearOffer ? null : (offer ?? this.offer),
+        trip: trip ?? this.trip,
+        offerSeconds: offerSeconds ?? this.offerSeconds,
+        wallet: wallet ?? this.wallet,
+        error: clearError ? null : (error ?? this.error),
+      );
 }
 
 class DriverFlowController extends StateNotifier<DriverFlowState> {
@@ -82,65 +83,69 @@ class DriverFlowController extends StateNotifier<DriverFlowState> {
   double _tripDistanceKm = 0;
 
   Future<void> requestOtp(String phone) => _run(() async {
-    await ref.read(authRepositoryProvider).requestPhoneCode(phone);
-    state = state.copyWith(phone: phone, step: DriverStep.otp);
-  });
+        await ref.read(authRepositoryProvider).requestPhoneCode(phone);
+        state = state.copyWith(phone: phone, step: DriverStep.otp);
+      });
 
   Future<void> confirmOtp(String code) => _run(() async {
-    await ref.read(authRepositoryProvider).confirmPhoneCode(state.phone, code);
-    await refreshApplication();
-  });
+        await ref
+            .read(authRepositoryProvider)
+            .confirmPhoneCode(state.phone, code);
+        await refreshApplication();
+      });
 
   Future<void> refreshApplication() => _run(() async {
-    try {
-      final app = await ref.read(driverRepositoryProvider).application();
-      final docs = await ref.read(driverRepositoryProvider).documents();
-      final status = app['status']?.toString() ?? 'not_submitted';
-      state = state.copyWith(
-        applicationStatus: status,
-        documents: docs,
-        step: status == 'approved' ? DriverStep.duty : DriverStep.verification,
-      );
-    } catch (_) {
-      state = state.copyWith(
-        applicationStatus: 'not_submitted',
-        step: DriverStep.verification,
-      );
-    }
-  });
+        try {
+          final app = await ref.read(driverRepositoryProvider).application();
+          final docs = await ref.read(driverRepositoryProvider).documents();
+          final status = app['status']?.toString() ?? 'not_submitted';
+          state = state.copyWith(
+            applicationStatus: status,
+            documents: docs,
+            step: status == 'approved'
+                ? DriverStep.duty
+                : DriverStep.verification,
+          );
+        } catch (_) {
+          state = state.copyWith(
+            applicationStatus: 'not_submitted',
+            step: DriverStep.verification,
+          );
+        }
+      });
 
   Future<void> uploadDocument(String type) => _run(() async {
-    final file = await ImagePicker().pickImage(
-      source: ImageSource.camera,
-      imageQuality: 82,
-    );
-    if (file == null) return;
-    await ref
-        .read(driverRepositoryProvider)
-        .uploadDocument(documentType: type, filePath: file.path);
-    state = state.copyWith(
-      documents: await ref.read(driverRepositoryProvider).documents(),
-    );
-  });
+        final file = await ImagePicker().pickImage(
+          source: ImageSource.camera,
+          imageQuality: 82,
+        );
+        if (file == null) return;
+        await ref
+            .read(driverRepositoryProvider)
+            .uploadDocument(documentType: type, filePath: file.path);
+        state = state.copyWith(
+          documents: await ref.read(driverRepositoryProvider).documents(),
+        );
+      });
 
   Future<void> toggleDuty(bool online) => _run(() async {
-    if (!online) {
-      _heartbeat?.cancel();
-      await ref.read(driverRepositoryProvider).goOffline();
-      state = state.copyWith(online: false, heartbeatHealthy: false);
-      return;
-    }
-    final point = await _position();
-    await ref
-        .read(driverRepositoryProvider)
-        .goOnline(point.latitude, point.longitude);
-    await ref.read(driverRealtimeProvider).connect('/ws/v1/drivers/me/');
-    state = state.copyWith(online: true, heartbeatHealthy: true);
-    _heartbeat = Timer.periodic(
-      const Duration(seconds: 20),
-      (_) => _sendHeartbeat(),
-    );
-  });
+        if (!online) {
+          _heartbeat?.cancel();
+          await ref.read(driverRepositoryProvider).goOffline();
+          state = state.copyWith(online: false, heartbeatHealthy: false);
+          return;
+        }
+        final point = await _position();
+        await ref
+            .read(driverRepositoryProvider)
+            .goOnline(point.latitude, point.longitude);
+        await ref.read(driverRealtimeProvider).connect('/ws/v1/drivers/me/');
+        state = state.copyWith(online: true, heartbeatHealthy: true);
+        _heartbeat = Timer.periodic(
+          const Duration(seconds: 20),
+          (_) => _sendHeartbeat(),
+        );
+      });
 
   Future<void> _sendHeartbeat() async {
     try {
@@ -180,17 +185,23 @@ class DriverFlowController extends StateNotifier<DriverFlowState> {
   void acceptOffer() {
     final offer = state.offer;
     if (offer == null || state.offerSeconds <= 0) return;
-    ref.read(driverRealtimeProvider).send('offer_accept', {
-      'offer_id': offer.id,
-    }, requestId: 'accept-${offer.id}');
+    ref.read(driverRealtimeProvider).send(
+        'offer_accept',
+        {
+          'offer_id': offer.id,
+        },
+        requestId: 'accept-${offer.id}');
   }
 
   void rejectOffer() {
     final offer = state.offer;
     if (offer == null) return;
-    ref.read(driverRealtimeProvider).send('offer_reject', {
-      'offer_id': offer.id,
-    }, requestId: 'reject-${offer.id}');
+    ref.read(driverRealtimeProvider).send(
+        'offer_reject',
+        {
+          'offer_id': offer.id,
+        },
+        requestId: 'reject-${offer.id}');
     _offerTimer?.cancel();
     state = state.copyWith(clearOffer: true, offerSeconds: 0);
   }
@@ -198,18 +209,24 @@ class DriverFlowController extends StateNotifier<DriverFlowState> {
   void arrived() {
     final trip = state.trip;
     if (trip == null) return;
-    ref.read(driverRealtimeProvider).send('driver_arrived', {
-      'trip_id': trip.id,
-    }, requestId: 'arrive-${trip.id}');
+    ref.read(driverRealtimeProvider).send(
+        'driver_arrived',
+        {
+          'trip_id': trip.id,
+        },
+        requestId: 'arrive-${trip.id}');
   }
 
   void startTrip(String pin) {
     final trip = state.trip;
     if (trip == null) return;
-    ref.read(driverRealtimeProvider).send('trip_start', {
-      'trip_id': trip.id,
-      'pin': pin,
-    }, requestId: 'start-${trip.id}');
+    ref.read(driverRealtimeProvider).send(
+        'trip_start',
+        {
+          'trip_id': trip.id,
+          'pin': pin,
+        },
+        requestId: 'start-${trip.id}');
   }
 
   void completeTrip() {
@@ -218,11 +235,14 @@ class DriverFlowController extends StateNotifier<DriverFlowState> {
     final elapsed = DateTime.now().difference(
       _tripStartedAt ?? DateTime.now().subtract(const Duration(minutes: 1)),
     );
-    ref.read(driverRealtimeProvider).send('trip_complete', {
-      'trip_id': trip.id,
-      'distance_km': _tripDistanceKm.clamp(0.1, 9999),
-      'duration_minutes': (elapsed.inSeconds / 60).clamp(0.1, 999),
-    }, requestId: 'complete-${trip.id}');
+    ref.read(driverRealtimeProvider).send(
+        'trip_complete',
+        {
+          'trip_id': trip.id,
+          'distance_km': _tripDistanceKm.clamp(0.1, 9999),
+          'duration_minutes': (elapsed.inSeconds / 60).clamp(0.1, 999),
+        },
+        requestId: 'complete-${trip.id}');
   }
 
   double _distanceKm(Position from, Position to) {
@@ -231,8 +251,7 @@ class DriverFlowController extends StateNotifier<DriverFlowState> {
     final lat2 = to.latitude * math.pi / 180;
     final dLat = (to.latitude - from.latitude) * math.pi / 180;
     final dLon = (to.longitude - from.longitude) * math.pi / 180;
-    final a =
-        math.sin(dLat / 2) * math.sin(dLat / 2) +
+    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
         math.cos(lat1) *
             math.cos(lat2) *
             math.sin(dLon / 2) *
@@ -241,27 +260,25 @@ class DriverFlowController extends StateNotifier<DriverFlowState> {
   }
 
   Future<void> openWallet() => _run(() async {
-    final wallets = await ref.read(walletRepositoryProvider).wallets();
-    state = state.copyWith(
-      wallet: wallets.isEmpty ? null : wallets.first,
-      step: DriverStep.wallet,
-    );
-  });
+        final wallets = await ref.read(walletRepositoryProvider).wallets();
+        state = state.copyWith(
+          wallet: wallets.isEmpty ? null : wallets.first,
+          step: DriverStep.wallet,
+        );
+      });
 
   Future<void> topUp(double amount) => _run(() async {
-    final wallet = state.wallet;
-    if (wallet == null) return;
-    await ref
-        .read(paymentRepositoryProvider)
-        .initiateStk(
-          walletId: wallet.id,
-          purpose: wallet.debtBalance > 0 ? 'cash_debt' : 'wallet_topup',
-          amount: amount,
-          phoneNumber: state.phone,
-          idempotencyKey:
-              'driver-${wallet.id}-${DateTime.now().millisecondsSinceEpoch}',
-        );
-  });
+        final wallet = state.wallet;
+        if (wallet == null) return;
+        await ref.read(paymentRepositoryProvider).initiateStk(
+              walletId: wallet.id,
+              purpose: wallet.debtBalance > 0 ? 'cash_debt' : 'wallet_topup',
+              amount: amount,
+              phoneNumber: state.phone,
+              idempotencyKey:
+                  'driver-${wallet.id}-${DateTime.now().millisecondsSinceEpoch}',
+            );
+      });
 
   void closeWallet() => state = state.copyWith(step: DriverStep.duty);
 
@@ -285,10 +302,8 @@ class DriverFlowController extends StateNotifier<DriverFlowState> {
         ),
         expiresAt: DateTime.parse(event.data['expires_at'] as String),
       );
-      final seconds = offer.expiresAt
-          .difference(DateTime.now())
-          .inSeconds
-          .clamp(0, 30);
+      final seconds =
+          offer.expiresAt.difference(DateTime.now()).inSeconds.clamp(0, 30);
       state = state.copyWith(offer: offer, offerSeconds: seconds);
       _offerTimer?.cancel();
       _offerTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -363,5 +378,5 @@ class DriverFlowController extends StateNotifier<DriverFlowState> {
 
 final driverFlowProvider =
     StateNotifierProvider<DriverFlowController, DriverFlowState>(
-      (ref) => DriverFlowController(ref),
-    );
+  (ref) => DriverFlowController(ref),
+);

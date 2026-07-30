@@ -15,17 +15,16 @@ class ApiFailure implements Exception {
 
 class ApiClient {
   ApiClient({required String baseUrl, TokenStore? tokenStore, Dio? dio})
-    : tokens = tokenStore ?? TokenStore(),
-      http =
-          dio ??
-          Dio(
-            BaseOptions(
-              baseUrl: baseUrl,
-              connectTimeout: const Duration(seconds: 12),
-              receiveTimeout: const Duration(seconds: 20),
-              headers: {'Accept': 'application/json'},
-            ),
-          ) {
+      : tokens = tokenStore ?? TokenStore(),
+        http = dio ??
+            Dio(
+              BaseOptions(
+                baseUrl: baseUrl,
+                connectTimeout: const Duration(seconds: 12),
+                receiveTimeout: const Duration(seconds: 20),
+                headers: {'Accept': 'application/json'},
+              ),
+            ) {
     http.interceptors.add(
       InterceptorsWrapper(onRequest: _authorize, onError: _handleUnauthorized),
     );
@@ -123,9 +122,7 @@ class ApiClient {
 
   DioException _normalize(DioException error) {
     final data = error.response?.data;
-    final fields = data is Map
-        ? Map<String, dynamic>.from(data as Map<dynamic, dynamic>)
-        : null;
+    final fields = data is Map ? Map<String, dynamic>.from(data) : null;
     final detail = fields?['detail'];
     return error.copyWith(
       error: ApiFailure(

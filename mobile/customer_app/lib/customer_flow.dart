@@ -48,19 +48,20 @@ class CustomerFlowState {
     String? paymentMethod,
     String? error,
     bool clearError = false,
-  }) => CustomerFlowState(
-    step: step ?? this.step,
-    busy: busy ?? this.busy,
-    phone: phone ?? this.phone,
-    pickup: pickup ?? this.pickup,
-    dropoff: dropoff ?? this.dropoff,
-    quote: quote ?? this.quote,
-    trip: trip ?? this.trip,
-    driverLatitude: driverLatitude ?? this.driverLatitude,
-    driverLongitude: driverLongitude ?? this.driverLongitude,
-    paymentMethod: paymentMethod ?? this.paymentMethod,
-    error: clearError ? null : (error ?? this.error),
-  );
+  }) =>
+      CustomerFlowState(
+        step: step ?? this.step,
+        busy: busy ?? this.busy,
+        phone: phone ?? this.phone,
+        pickup: pickup ?? this.pickup,
+        dropoff: dropoff ?? this.dropoff,
+        quote: quote ?? this.quote,
+        trip: trip ?? this.trip,
+        driverLatitude: driverLatitude ?? this.driverLatitude,
+        driverLongitude: driverLongitude ?? this.driverLongitude,
+        paymentMethod: paymentMethod ?? this.paymentMethod,
+        error: clearError ? null : (error ?? this.error),
+      );
 }
 
 class CustomerFlowController extends StateNotifier<CustomerFlowState> {
@@ -72,14 +73,16 @@ class CustomerFlowController extends StateNotifier<CustomerFlowState> {
   StreamSubscription<RealtimeEnvelope>? _events;
 
   Future<void> requestOtp(String phone) => _run(() async {
-    await ref.read(authRepositoryProvider).requestPhoneCode(phone);
-    state = state.copyWith(phone: phone, step: CustomerStep.otp);
-  });
+        await ref.read(authRepositoryProvider).requestPhoneCode(phone);
+        state = state.copyWith(phone: phone, step: CustomerStep.otp);
+      });
 
   Future<void> confirmOtp(String code) => _run(() async {
-    await ref.read(authRepositoryProvider).confirmPhoneCode(state.phone, code);
-    state = state.copyWith(step: CustomerStep.home);
-  });
+        await ref
+            .read(authRepositoryProvider)
+            .confirmPhoneCode(state.phone, code);
+        state = state.copyWith(step: CustomerStep.home);
+      });
 
   Future<LocationDto?> useCurrentLocation() async {
     return _runValue(() async {
@@ -99,60 +102,60 @@ class CustomerFlowController extends StateNotifier<CustomerFlowState> {
   }
 
   Future<void> setPickup(double latitude, double longitude) => _run(() async {
-    final location = await ref
-        .read(customerRepositoryProvider)
-        .resolveLocation(latitude, longitude);
-    state = state.copyWith(pickup: location);
-  });
+        final location = await ref
+            .read(customerRepositoryProvider)
+            .resolveLocation(latitude, longitude);
+        state = state.copyWith(pickup: location);
+      });
 
   Future<void> setDropoff(double latitude, double longitude) => _run(() async {
-    final location = await ref
-        .read(customerRepositoryProvider)
-        .resolveLocation(latitude, longitude);
-    state = state.copyWith(dropoff: location);
-  });
+        final location = await ref
+            .read(customerRepositoryProvider)
+            .resolveLocation(latitude, longitude);
+        state = state.copyWith(dropoff: location);
+      });
 
   Future<void> quote() => _run(() async {
-    final pickup = state.pickup;
-    final dropoff = state.dropoff;
-    if (pickup == null || dropoff == null) {
-      throw StateError('Choose both pickup and destination.');
-    }
-    final quote = await ref.read(customerRepositoryProvider).createQuote({
-      'origin': pickup.id,
-      'destination': dropoff.id,
-      'service_type': 'ride',
-      'pickup_latitude': pickup.latitude,
-      'pickup_longitude': pickup.longitude,
-      'dropoff_latitude': dropoff.latitude,
-      'dropoff_longitude': dropoff.longitude,
-    });
-    state = state.copyWith(quote: quote, step: CustomerStep.quote);
-  });
+        final pickup = state.pickup;
+        final dropoff = state.dropoff;
+        if (pickup == null || dropoff == null) {
+          throw StateError('Choose both pickup and destination.');
+        }
+        final quote = await ref.read(customerRepositoryProvider).createQuote({
+          'origin': pickup.id,
+          'destination': dropoff.id,
+          'service_type': 'ride',
+          'pickup_latitude': pickup.latitude,
+          'pickup_longitude': pickup.longitude,
+          'dropoff_latitude': dropoff.latitude,
+          'dropoff_longitude': dropoff.longitude,
+        });
+        state = state.copyWith(quote: quote, step: CustomerStep.quote);
+      });
 
   void choosePayment(String value) =>
       state = state.copyWith(paymentMethod: value, clearError: true);
 
   Future<void> book() => _run(() async {
-    final quote = state.quote;
-    if (quote == null || quote.expiresAt.isBefore(DateTime.now())) {
-      throw StateError('Your fare lock expired. Request a new quote.');
-    }
-    final trip = await ref
-        .read(customerRepositoryProvider)
-        .requestTrip(quoteId: quote.id, paymentMethod: state.paymentMethod);
-    state = state.copyWith(trip: trip, step: CustomerStep.dispatching);
-    await ref.read(realtimeProvider).connect('/ws/v1/trips/${trip.id}/');
-  });
+        final quote = state.quote;
+        if (quote == null || quote.expiresAt.isBefore(DateTime.now())) {
+          throw StateError('Your fare lock expired. Request a new quote.');
+        }
+        final trip = await ref
+            .read(customerRepositoryProvider)
+            .requestTrip(quoteId: quote.id, paymentMethod: state.paymentMethod);
+        state = state.copyWith(trip: trip, step: CustomerStep.dispatching);
+        await ref.read(realtimeProvider).connect('/ws/v1/trips/${trip.id}/');
+      });
 
   Future<void> cancel() => _run(() async {
-    final trip = state.trip;
-    if (trip == null) return;
-    await ref
-        .read(customerRepositoryProvider)
-        .cancelTrip(trip.id, reason: 'Cancelled from customer app');
-    state = const CustomerFlowState(step: CustomerStep.home);
-  });
+        final trip = state.trip;
+        if (trip == null) return;
+        await ref
+            .read(customerRepositoryProvider)
+            .cancelTrip(trip.id, reason: 'Cancelled from customer app');
+        state = const CustomerFlowState(step: CustomerStep.home);
+      });
 
   void reset() =>
       state = CustomerFlowState(step: CustomerStep.home, phone: state.phone);
@@ -167,8 +170,7 @@ class CustomerFlowController extends StateNotifier<CustomerFlowState> {
       );
       return;
     }
-    final status =
-        event.data['status']?.toString() ??
+    final status = event.data['status']?.toString() ??
         {
           'driver_accepted': 'accepted',
           'driver_arrived': 'accepted',
@@ -191,8 +193,8 @@ class CustomerFlowController extends StateNotifier<CustomerFlowState> {
       step: status == 'completed'
           ? CustomerStep.complete
           : status == 'accepted' || status == 'in_progress'
-          ? CustomerStep.tracking
-          : state.step,
+              ? CustomerStep.tracking
+              : state.step,
     );
   }
 
@@ -233,5 +235,5 @@ class CustomerFlowController extends StateNotifier<CustomerFlowState> {
 
 final customerFlowProvider =
     StateNotifierProvider<CustomerFlowController, CustomerFlowState>(
-      (ref) => CustomerFlowController(ref),
-    );
+  (ref) => CustomerFlowController(ref),
+);

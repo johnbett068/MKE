@@ -37,3 +37,7 @@ Thumbs.db
 **/ios/.symlinks/
 *.jks
 *.keystore
+
+# Shared Dart packages are libraries; only application lockfiles are committed.
+mobile/mle_api/pubspec.lock
+mobile/mle_ui/pubspec.lock

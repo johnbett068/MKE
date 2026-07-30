@@ -13,12 +13,12 @@ class FareQuoteDto {
   final DateTime expiresAt;
 
   factory FareQuoteDto.fromJson(Map<String, dynamic> json) => FareQuoteDto(
-    id: json['id'] as int,
-    distanceKm: double.parse(json['distance_km'].toString()),
-    durationMinutes: double.parse(json['duration_minutes'].toString()),
-    fare: double.parse(json['fare'].toString()),
-    expiresAt: DateTime.parse(json['expires_at'] as String),
-  );
+        id: json['id'] as int,
+        distanceKm: double.parse(json['distance_km'].toString()),
+        durationMinutes: double.parse(json['duration_minutes'].toString()),
+        fare: double.parse(json['fare'].toString()),
+        expiresAt: DateTime.parse(json['expires_at'] as String),
+      );
 }
 
 class LocationDto {
@@ -42,18 +42,18 @@ class LocationDto {
   String get label => zone.isEmpty ? '$town, $county' : '$zone, $town';
 
   factory LocationDto.fromJson(Map<String, dynamic> json) => LocationDto(
-    id: json['id'] as int,
-    country: json['country'] as String,
-    county: json['county'] as String,
-    town: json['town'] as String,
-    zone: (json['zone'] as String?) ?? '',
-    latitude: double.parse(
-      (json['selected_latitude'] ?? json['latitude']).toString(),
-    ),
-    longitude: double.parse(
-      (json['selected_longitude'] ?? json['longitude']).toString(),
-    ),
-  );
+        id: json['id'] as int,
+        country: json['country'] as String,
+        county: json['county'] as String,
+        town: json['town'] as String,
+        zone: (json['zone'] as String?) ?? '',
+        latitude: double.parse(
+          (json['selected_latitude'] ?? json['latitude']).toString(),
+        ),
+        longitude: double.parse(
+          (json['selected_longitude'] ?? json['longitude']).toString(),
+        ),
+      );
 }
 
 class TripDto {
@@ -75,16 +75,16 @@ class TripDto {
   final String? startPin;
 
   factory TripDto.fromJson(Map<String, dynamic> json) => TripDto(
-    id: json['id'] as int,
-    status: json['status'] as String,
-    originId: json['origin'] as int,
-    destinationId: json['destination'] as int,
-    driverId: json['driver'] as int?,
-    quotedFare: json['quoted_fare'] == null
-        ? null
-        : double.parse(json['quoted_fare'].toString()),
-    startPin: json['start_pin'] as String?,
-  );
+        id: json['id'] as int,
+        status: json['status'] as String,
+        originId: json['origin'] as int,
+        destinationId: json['destination'] as int,
+        driverId: json['driver'] as int?,
+        quotedFare: json['quoted_fare'] == null
+            ? null
+            : double.parse(json['quoted_fare'].toString()),
+        startPin: json['start_pin'] as String?,
+      );
 }
 
 class DriverProfileDto {
@@ -126,11 +126,12 @@ class TripOfferDto {
   final DateTime expiresAt;
 
   factory TripOfferDto.fromJson(Map<String, dynamic> json) => TripOfferDto(
-    id: json['id'] as int,
-    trip: TripDto.fromJson(Map<String, dynamic>.from(json['trip'] as Map)),
-    distanceToPickupKm: double.parse(json['distance_to_pickup_km'].toString()),
-    expiresAt: DateTime.parse(json['expires_at'] as String),
-  );
+        id: json['id'] as int,
+        trip: TripDto.fromJson(Map<String, dynamic>.from(json['trip'] as Map)),
+        distanceToPickupKm:
+            double.parse(json['distance_to_pickup_km'].toString()),
+        expiresAt: DateTime.parse(json['expires_at'] as String),
+      );
 }
 
 class RealtimeEnvelope {
@@ -180,10 +181,10 @@ class WalletDto {
   final double debtBalance;
 
   factory WalletDto.fromJson(Map<String, dynamic> json) => WalletDto(
-    id: json['id'] as int,
-    role: json['role'] as String,
-    availableBalance: double.parse(json['available_balance'].toString()),
-    pendingBalance: double.parse(json['pending_balance'].toString()),
-    debtBalance: double.parse(json['debt_balance'].toString()),
-  );
+        id: json['id'] as int,
+        role: json['role'] as String,
+        availableBalance: double.parse(json['available_balance'].toString()),
+        pendingBalance: double.parse(json['pending_balance'].toString()),
+        debtBalance: double.parse(json['debt_balance'].toString()),
+      );
 }

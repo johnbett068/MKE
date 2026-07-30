@@ -9,11 +9,9 @@ class AuthTokens {
   bool get accessExpiresSoon {
     try {
       final parts = access.split('.');
-      final payload =
-          jsonDecode(
-                utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
-              )
-              as Map<String, dynamic>;
+      final payload = jsonDecode(
+        utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+      ) as Map<String, dynamic>;
       final expiry = DateTime.fromMillisecondsSinceEpoch(
         (payload['exp'] as int) * 1000,
         isUtc: true,
@@ -29,7 +27,7 @@ class AuthTokens {
 
 class TokenStore {
   TokenStore({FlutterSecureStorage? storage})
-    : _storage = storage ?? const FlutterSecureStorage();
+      : _storage = storage ?? const FlutterSecureStorage();
 
   static const _accessKey = 'mle_access_token';
   static const _refreshKey = 'mle_refresh_token';

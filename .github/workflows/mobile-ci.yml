@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        app: [customer_app, driver_app]
+        project: [mle_ui, mle_api, customer_app, driver_app]
     steps:
       - uses: actions/checkout@v6
       - uses: subosito/flutter-action@v2
@@ -33,14 +33,19 @@ jobs:
           channel: stable
           cache: true
       - name: Generate native runners
-        working-directory: mobile/${{ matrix.app }}
+        if: matrix.project == 'customer_app' || matrix.project == 'driver_app'
+        working-directory: mobile/${{ matrix.project }}
         run: flutter create --platforms=android,ios .
       - name: Resolve dependencies
-        working-directory: mobile/${{ matrix.app }}
+        working-directory: mobile/${{ matrix.project }}
         run: flutter pub get
       - name: Analyze
-        working-directory: mobile/${{ matrix.app }}
+        working-directory: mobile/${{ matrix.project }}
         run: flutter analyze --fatal-infos
+      - name: Test application
+        if: matrix.project == 'customer_app' || matrix.project == 'driver_app'
+        working-directory: mobile/${{ matrix.project }}
+        run: flutter test
 
   android-release:
     if: startsWith(github.ref, 'refs/tags/v')

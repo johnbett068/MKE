@@ -111,11 +111,12 @@ Last updated: 2026-07-30
   PostGIS.
 - `backend-ci.yml` runs Ruff, Django checks, migration drift, all backend tests,
   Compose rendering, and the production image build.
-- `mobile-ci.yml` generates runners and analyzes both apps, then produces Android
-  APK and unsigned iOS artifacts for `v*` release tags.
+- `mobile-ci.yml` analyzes both shared packages, generates and validates both app
+  runners, runs app widget smoke tests, then produces Android APK and unsigned
+  iOS artifacts for `v*` release tags.
 - Current local verification: Ruff passed; Django system checks passed; migration
-  drift is clean; all **22/22 backend tests** passed; all 12 Dart source files
-  passed formatter/parser validation.
+  drift is clean; all **22/22 backend tests** passed; all four Flutter projects
+  pass strict static analysis and both application widget smoke tests pass.
 
 ## Completed in foundation milestone
 
@@ -198,9 +199,10 @@ Last updated: 2026-07-30
   through an idempotent simulated M-Pesa STK callback.
 - Verification on 2026-07-30: Django system checks and migration-drift checks
   pass; the current 22-test suite includes the full lifecycle E2E scenario.
-  All 12 Dart source files pass the SDK formatter/parser. Flutter dependency
-  bootstrap is still blocked by a non-responsive `flutter_tools` pub bootstrap
-  on this Windows host, so package analysis and device builds remain pending.
+  `flutter analyze --fatal-infos` passes with zero issues in `mle_ui`, `mle_api`,
+  `customer_app`, and `driver_app`; both application widget smoke tests pass.
+  An isolated replay of runner generation, dependency resolution, analysis, and
+  tests also passes for both applications.
 
 ## Completed in production packaging and release automation milestone
 
@@ -226,7 +228,8 @@ Last updated: 2026-07-30
 - Added the production environment template and complete deployment, M-Pesa,
   OSRM, backup, rollback, observability, and Android field-test guide.
 - Verification on 2026-07-30: Ruff, Django system checks, migration drift, all
-  22 backend tests, and formatting/parsing of all 12 Dart source files pass.
+  22 backend tests, strict analysis of all four Flutter projects, both Flutter
+  widget smoke tests, and an isolated replay of the Mobile CI validation pass.
 
 ## Known intentional limitations
 
@@ -240,10 +243,9 @@ Last updated: 2026-07-30
 - `DriverAvailability` remains as a deprecated compatibility table pending a
   data-removal migration.
 - Shops, housing, jobs, and marketplace remain scaffolds.
-- Native Flutter runners and device builds require successful Flutter toolchain
-  bootstrap plus Android/iOS signing and map-key configuration; CI now owns
-  runner generation and release builds, but its first remote run is still a
-  release gate.
+- Signed native device builds still require Android/iOS signing and map-key
+  configuration. Local runner generation and validation now pass, while the
+  first successful remote APK/iOS artifact build remains a release gate.
 - C2B/B2C callbacks are durably ingested but do not settle balances until their
   reconciliation and disbursement policies are approved.
 - Durable events currently provide at-least-once delivery; mobile consumers must

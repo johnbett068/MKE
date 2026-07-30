@@ -11,11 +11,11 @@ class CustomerApp extends StatelessWidget {
   const CustomerApp({super.key});
   @override
   Widget build(BuildContext context) => MaterialApp(
-    debugShowCheckedModeBanner: false,
-    title: 'MKE',
-    theme: mleTheme(),
-    home: const CustomerFlowScreen(),
-  );
+        debugShowCheckedModeBanner: false,
+        title: 'MKE',
+        theme: mleTheme(),
+        home: const CustomerFlowScreen(),
+      );
 }
 
 class CustomerFlowScreen extends ConsumerWidget {
@@ -30,9 +30,9 @@ class CustomerFlowScreen extends ConsumerWidget {
       CustomerStep.home => _MapHome(state: state, controller: controller),
       CustomerStep.quote => _Quote(state: state, controller: controller),
       CustomerStep.dispatching => _Dispatch(
-        state: state,
-        controller: controller,
-      ),
+          state: state,
+          controller: controller,
+        ),
       CustomerStep.tracking => _Tracking(state: state, controller: controller),
       CustomerStep.complete => _Complete(state: state, controller: controller),
     };
@@ -81,23 +81,23 @@ class _PhoneState extends State<_Phone> {
   final phone = TextEditingController(text: '+254');
   @override
   Widget build(BuildContext context) => _AuthShell(
-    title: 'Your city, one tap away.',
-    subtitle: 'Enter your mobile number to securely continue.',
-    child: Column(
-      children: [
-        TextField(
-          controller: phone,
-          keyboardType: TextInputType.phone,
-          decoration: const InputDecoration(labelText: 'Phone number'),
+        title: 'Your city, one tap away.',
+        subtitle: 'Enter your mobile number to securely continue.',
+        child: Column(
+          children: [
+            TextField(
+              controller: phone,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(labelText: 'Phone number'),
+            ),
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: () => widget.controller.requestOtp(phone.text.trim()),
+              child: const Text('Send verification code'),
+            ),
+          ],
         ),
-        const SizedBox(height: 16),
-        FilledButton(
-          onPressed: () => widget.controller.requestOtp(phone.text.trim()),
-          child: const Text('Send verification code'),
-        ),
-      ],
-    ),
-  );
+      );
 }
 
 class _Otp extends StatefulWidget {
@@ -112,23 +112,23 @@ class _OtpState extends State<_Otp> {
   final code = TextEditingController();
   @override
   Widget build(BuildContext context) => _AuthShell(
-    title: 'Verify it’s you',
-    subtitle: 'Enter the 6-digit code sent to ${widget.phone}.',
-    child: Column(
-      children: [
-        TextField(
-          controller: code,
-          maxLength: 6,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'Verification code'),
+        title: 'Verify it’s you',
+        subtitle: 'Enter the 6-digit code sent to ${widget.phone}.',
+        child: Column(
+          children: [
+            TextField(
+              controller: code,
+              maxLength: 6,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Verification code'),
+            ),
+            FilledButton(
+              onPressed: () => widget.controller.confirmOtp(code.text.trim()),
+              child: const Text('Verify and continue'),
+            ),
+          ],
         ),
-        FilledButton(
-          onPressed: () => widget.controller.confirmOtp(code.text.trim()),
-          child: const Text('Verify and continue'),
-        ),
-      ],
-    ),
-  );
+      );
 }
 
 class _AuthShell extends StatelessWidget {
@@ -142,42 +142,42 @@ class _AuthShell extends StatelessWidget {
   final Widget child;
   @override
   Widget build(BuildContext context) => Container(
-    decoration: const BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFFFF7ED), Color(0xFFEFF4FF)],
-      ),
-    ),
-    child: Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 440),
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const MleBrandMark(size: 54),
-                  const SizedBox(height: 24),
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.headlineMedium,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFFFF7ED), Color(0xFFEFF4FF)],
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 440),
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const MleBrandMark(size: 54),
+                      const SizedBox(height: 24),
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(subtitle),
+                      const SizedBox(height: 28),
+                      child,
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(subtitle),
-                  const SizedBox(height: 28),
-                  child,
-                ],
+                ),
               ),
             ),
           ),
         ),
-      ),
-    ),
-  );
+      );
 }
 
 class _MapHome extends StatefulWidget {
@@ -269,8 +269,8 @@ class _MapHomeState extends State<_MapHome> {
                   const SizedBox(height: 12),
                   OutlinedButton.icon(
                     onPressed: () async {
-                      final current = await widget.controller
-                          .useCurrentLocation();
+                      final current =
+                          await widget.controller.useCurrentLocation();
                       if (current != null) {
                         await widget.controller.setPickup(
                           current.latitude,
@@ -313,14 +313,14 @@ class _PlaceRow extends StatelessWidget {
   final VoidCallback onTap;
   @override
   Widget build(BuildContext context) => ListTile(
-    onTap: onTap,
-    selected: selected,
-    selectedTileColor: MleColors.orangeSoft,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    leading: Icon(icon, color: color),
-    title: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
-    trailing: selected ? const Icon(Icons.edit_location_alt) : null,
-  );
+        onTap: onTap,
+        selected: selected,
+        selectedTileColor: MleColors.orangeSoft,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        leading: Icon(icon, color: color),
+        title: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+        trailing: selected ? const Icon(Icons.edit_location_alt) : null,
+      );
 }
 
 class _Quote extends StatelessWidget {
@@ -414,54 +414,56 @@ class _Dispatch extends StatelessWidget {
   final CustomerFlowController controller;
   @override
   Widget build(BuildContext context) => Center(
-    child: Padding(
-      padding: const EdgeInsets.all(28),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(
-            width: 96,
-            height: 96,
-            child: CircularProgressIndicator(strokeWidth: 8),
-          ),
-          const SizedBox(height: 30),
-          Text(
-            'Finding your driver',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 8),
-          const Text('We’re sending your request to nearby verified drivers.'),
-          const SizedBox(height: 28),
-          if (state.trip?.startPin != null)
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    const Text('YOUR RIDE-START PIN'),
-                    const SizedBox(height: 8),
-                    Text(
-                      state.trip!.startPin!,
-                      style: const TextStyle(
-                        fontSize: 38,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 8,
-                      ),
-                    ),
-                    const Text('Only share this after meeting your driver.'),
-                  ],
-                ),
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                width: 96,
+                height: 96,
+                child: CircularProgressIndicator(strokeWidth: 8),
               ),
-            ),
-          const SizedBox(height: 24),
-          TextButton(
-            onPressed: controller.cancel,
-            child: const Text('Cancel request'),
+              const SizedBox(height: 30),
+              Text(
+                'Finding your driver',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                  'We’re sending your request to nearby verified drivers.'),
+              const SizedBox(height: 28),
+              if (state.trip?.startPin != null)
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        const Text('YOUR RIDE-START PIN'),
+                        const SizedBox(height: 8),
+                        Text(
+                          state.trip!.startPin!,
+                          style: const TextStyle(
+                            fontSize: 38,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 8,
+                          ),
+                        ),
+                        const Text(
+                            'Only share this after meeting your driver.'),
+                      ],
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 24),
+              TextButton(
+                onPressed: controller.cancel,
+                child: const Text('Cancel request'),
+              ),
+            ],
           ),
-        ],
-      ),
-    ),
-  );
+        ),
+      );
 }
 
 class _Tracking extends StatelessWidget {
@@ -547,32 +549,32 @@ class _Complete extends StatelessWidget {
   final CustomerFlowController controller;
   @override
   Widget build(BuildContext context) => Center(
-    child: Padding(
-      padding: const EdgeInsets.all(28),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const CircleAvatar(
-            radius: 42,
-            backgroundColor: Color(0xFFE7F8EF),
-            child: Icon(Icons.check, size: 48, color: MleColors.success),
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircleAvatar(
+                radius: 42,
+                backgroundColor: Color(0xFFE7F8EF),
+                child: Icon(Icons.check, size: 48, color: MleColors.success),
+              ),
+              const SizedBox(height: 22),
+              Text(
+                'You’ve arrived',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Fare: KES ${state.trip?.quotedFare?.toStringAsFixed(0) ?? '—'}',
+              ),
+              const SizedBox(height: 28),
+              FilledButton(
+                onPressed: controller.reset,
+                child: const Text('Book another ride'),
+              ),
+            ],
           ),
-          const SizedBox(height: 22),
-          Text(
-            'You’ve arrived',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Fare: KES ${state.trip?.quotedFare?.toStringAsFixed(0) ?? '—'}',
-          ),
-          const SizedBox(height: 28),
-          FilledButton(
-            onPressed: controller.reset,
-            child: const Text('Book another ride'),
-          ),
-        ],
-      ),
-    ),
-  );
+        ),
+      );
 }

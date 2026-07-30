@@ -12,11 +12,11 @@ class DriverApp extends StatelessWidget {
   const DriverApp({super.key});
   @override
   Widget build(BuildContext context) => MaterialApp(
-    debugShowCheckedModeBanner: false,
-    title: 'MKE Driver',
-    theme: mleTheme(),
-    home: const DriverFlowScreen(),
-  );
+        debugShowCheckedModeBanner: false,
+        title: 'MKE Driver',
+        theme: mleTheme(),
+        home: const DriverFlowScreen(),
+      );
 }
 
 class DriverFlowScreen extends ConsumerWidget {
@@ -79,21 +79,21 @@ class _PhoneState extends State<_Phone> {
   final phone = TextEditingController(text: '+254');
   @override
   Widget build(BuildContext context) => _Shell(
-    title: 'Drive. Earn. Move MKE.',
-    subtitle: 'Sign in with the phone number on your driver account.',
-    children: [
-      TextField(
-        controller: phone,
-        keyboardType: TextInputType.phone,
-        decoration: const InputDecoration(labelText: 'Phone number'),
-      ),
-      const SizedBox(height: 16),
-      FilledButton(
-        onPressed: () => widget.controller.requestOtp(phone.text.trim()),
-        child: const Text('Send verification code'),
-      ),
-    ],
-  );
+        title: 'Drive. Earn. Move MKE.',
+        subtitle: 'Sign in with the phone number on your driver account.',
+        children: [
+          TextField(
+            controller: phone,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(labelText: 'Phone number'),
+          ),
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: () => widget.controller.requestOtp(phone.text.trim()),
+            child: const Text('Send verification code'),
+          ),
+        ],
+      );
 }
 
 class _Otp extends StatefulWidget {
@@ -108,21 +108,21 @@ class _OtpState extends State<_Otp> {
   final code = TextEditingController();
   @override
   Widget build(BuildContext context) => _Shell(
-    title: 'Verify your number',
-    subtitle: 'We sent a 6-digit code to ${widget.phone}.',
-    children: [
-      TextField(
-        controller: code,
-        keyboardType: TextInputType.number,
-        maxLength: 6,
-        decoration: const InputDecoration(labelText: 'Verification code'),
-      ),
-      FilledButton(
-        onPressed: () => widget.controller.confirmOtp(code.text.trim()),
-        child: const Text('Continue'),
-      ),
-    ],
-  );
+        title: 'Verify your number',
+        subtitle: 'We sent a 6-digit code to ${widget.phone}.',
+        children: [
+          TextField(
+            controller: code,
+            keyboardType: TextInputType.number,
+            maxLength: 6,
+            decoration: const InputDecoration(labelText: 'Verification code'),
+          ),
+          FilledButton(
+            onPressed: () => widget.controller.confirmOtp(code.text.trim()),
+            child: const Text('Continue'),
+          ),
+        ],
+      );
 }
 
 class _Shell extends StatelessWidget {
@@ -136,36 +136,37 @@ class _Shell extends StatelessWidget {
   final List<Widget> children;
   @override
   Widget build(BuildContext context) => Container(
-    decoration: const BoxDecoration(
-      gradient: LinearGradient(
-        colors: [Color(0xFF0B1F3A), Color(0xFF155EEF)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-    ),
-    child: Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Card(
-          child: Padding(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF0B1F3A), Color(0xFF155EEF)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const MleBrandMark(size: 54),
-                const SizedBox(height: 22),
-                Text(title, style: Theme.of(context).textTheme.headlineMedium),
-                const SizedBox(height: 8),
-                Text(subtitle),
-                const SizedBox(height: 26),
-                ...children,
-              ],
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const MleBrandMark(size: 54),
+                    const SizedBox(height: 22),
+                    Text(title,
+                        style: Theme.of(context).textTheme.headlineMedium),
+                    const SizedBox(height: 8),
+                    Text(subtitle),
+                    const SizedBox(height: 26),
+                    ...children,
+                  ],
+                ),
+              ),
             ),
           ),
         ),
-      ),
-    ),
-  );
+      );
 }
 
 class _Verification extends StatelessWidget {
@@ -174,53 +175,54 @@ class _Verification extends StatelessWidget {
   final DriverFlowController controller;
   @override
   Widget build(BuildContext context) => ListView(
-    padding: const EdgeInsets.all(20),
-    children: [
-      const MleBrandMark(),
-      const SizedBox(height: 20),
-      Text(
-        'Driver verification',
-        style: Theme.of(context).textTheme.headlineMedium,
-      ),
-      const SizedBox(height: 8),
-      Text(
-        'Application status: ${state.applicationStatus.replaceAll('_', ' ')}',
-      ),
-      const SizedBox(height: 20),
-      ...[
-        ('national_id', 'National ID', Icons.badge),
-        ('driving_license', 'Driving licence', Icons.credit_card),
-        ('vehicle_logbook', 'Vehicle logbook', Icons.directions_car),
-        ('insurance', 'Insurance certificate', Icons.verified_user),
-      ].map((item) {
-        final uploaded = state.documents.any(
-          (doc) => doc['document_type'] == item.$1,
-        );
-        return Card(
-          margin: const EdgeInsets.only(bottom: 10),
-          child: ListTile(
-            leading: Icon(
-              item.$3,
-              color: uploaded ? MleColors.success : MleColors.orange,
-            ),
-            title: Text(item.$2),
-            subtitle: Text(uploaded ? 'Uploaded — under review' : 'Required'),
-            trailing: uploaded
-                ? const Icon(Icons.check_circle, color: MleColors.success)
-                : IconButton(
-                    icon: const Icon(Icons.camera_alt),
-                    onPressed: () => controller.uploadDocument(item.$1),
-                  ),
+        padding: const EdgeInsets.all(20),
+        children: [
+          const MleBrandMark(),
+          const SizedBox(height: 20),
+          Text(
+            'Driver verification',
+            style: Theme.of(context).textTheme.headlineMedium,
           ),
-        );
-      }),
-      const SizedBox(height: 14),
-      FilledButton(
-        onPressed: controller.refreshApplication,
-        child: const Text('Refresh approval status'),
-      ),
-    ],
-  );
+          const SizedBox(height: 8),
+          Text(
+            'Application status: ${state.applicationStatus.replaceAll('_', ' ')}',
+          ),
+          const SizedBox(height: 20),
+          ...[
+            ('national_id', 'National ID', Icons.badge),
+            ('driving_license', 'Driving licence', Icons.credit_card),
+            ('vehicle_logbook', 'Vehicle logbook', Icons.directions_car),
+            ('insurance', 'Insurance certificate', Icons.verified_user),
+          ].map((item) {
+            final uploaded = state.documents.any(
+              (doc) => doc['document_type'] == item.$1,
+            );
+            return Card(
+              margin: const EdgeInsets.only(bottom: 10),
+              child: ListTile(
+                leading: Icon(
+                  item.$3,
+                  color: uploaded ? MleColors.success : MleColors.orange,
+                ),
+                title: Text(item.$2),
+                subtitle:
+                    Text(uploaded ? 'Uploaded — under review' : 'Required'),
+                trailing: uploaded
+                    ? const Icon(Icons.check_circle, color: MleColors.success)
+                    : IconButton(
+                        icon: const Icon(Icons.camera_alt),
+                        onPressed: () => controller.uploadDocument(item.$1),
+                      ),
+              ),
+            );
+          }),
+          const SizedBox(height: 14),
+          FilledButton(
+            onPressed: controller.refreshApplication,
+            child: const Text('Refresh approval status'),
+          ),
+        ],
+      );
 }
 
 class _Duty extends StatelessWidget {
@@ -229,113 +231,117 @@ class _Duty extends StatelessWidget {
   final DriverFlowController controller;
   @override
   Widget build(BuildContext context) => ListView(
-    padding: const EdgeInsets.all(20),
-    children: [
-      Row(
+        padding: const EdgeInsets.all(20),
         children: [
-          const MleBrandMark(),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Driver control',
-              style: Theme.of(context).textTheme.titleLarge,
+          Row(
+            children: [
+              const MleBrandMark(),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Driver control',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ),
+              IconButton(
+                onPressed: controller.openWallet,
+                icon: const Icon(Icons.account_balance_wallet),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: state.online
+                    ? [MleColors.orange, const Color(0xFFFF6B35)]
+                    : [MleColors.navy, const Color(0xFF344054)],
+              ),
+              borderRadius: BorderRadius.circular(24),
             ),
-          ),
-          IconButton(
-            onPressed: controller.openWallet,
-            icon: const Icon(Icons.account_balance_wallet),
-          ),
-        ],
-      ),
-      const SizedBox(height: 24),
-      Container(
-        padding: const EdgeInsets.all(22),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: state.online
-                ? [MleColors.orange, const Color(0xFFFF6B35)]
-                : [MleColors.navy, const Color(0xFF344054)],
-          ),
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Column(
-          children: [
-            Row(
+            child: Column(
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        state.online ? 'You’re online' : 'You’re offline',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 24,
-                        ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            state.online ? 'You’re online' : 'You’re offline',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 24,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            state.online
+                                ? 'Ready for nearby requests'
+                                : 'Go online when you’re ready',
+                            style: const TextStyle(color: Colors.white70),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 5),
+                    ),
+                    Switch(
+                      value: state.online,
+                      activeTrackColor: Colors.white,
+                      activeThumbColor: MleColors.orange,
+                      onChanged: controller.toggleDuty,
+                    ),
+                  ],
+                ),
+                if (state.online) ...[
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Icon(
+                        state.heartbeatHealthy
+                            ? Icons.gps_fixed
+                            : Icons.gps_off,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 8),
                       Text(
-                        state.online
-                            ? 'Ready for nearby requests'
-                            : 'Go online when you’re ready',
-                        style: const TextStyle(color: Colors.white70),
+                        state.heartbeatHealthy
+                            ? 'GPS heartbeat healthy'
+                            : 'Reconnecting GPS heartbeat',
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ],
                   ),
-                ),
-                Switch(
-                  value: state.online,
-                  activeTrackColor: Colors.white,
-                  activeThumbColor: MleColors.orange,
-                  onChanged: controller.toggleDuty,
-                ),
+                ],
               ],
             ),
-            if (state.online) ...[
-              const SizedBox(height: 16),
-              Row(
+          ),
+          const SizedBox(height: 28),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
                 children: [
-                  Icon(
-                    state.heartbeatHealthy ? Icons.gps_fixed : Icons.gps_off,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(width: 8),
+                  const Icon(Icons.radar, color: MleColors.blue, size: 54),
+                  const SizedBox(height: 14),
                   Text(
-                    state.heartbeatHealthy
-                        ? 'GPS heartbeat healthy'
-                        : 'Reconnecting GPS heartbeat',
-                    style: const TextStyle(color: Colors.white),
+                    state.online
+                        ? 'Scanning nearby requests'
+                        : 'Requests paused',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Only offers assigned to you will appear here.',
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
-            ],
-          ],
-        ),
-      ),
-      const SizedBox(height: 28),
-      Card(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              const Icon(Icons.radar, color: MleColors.blue, size: 54),
-              const SizedBox(height: 14),
-              Text(
-                state.online ? 'Scanning nearby requests' : 'Requests paused',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Only offers assigned to you will appear here.',
-                textAlign: TextAlign.center,
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
-    ],
-  );
+        ],
+      );
 }
 
 class _OfferOverlay extends StatelessWidget {
