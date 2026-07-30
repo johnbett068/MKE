@@ -472,17 +472,17 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
-  mle_api:
+  mke_api:
     dependency: "direct main"
     description:
-      path: "../mle_api"
+      path: "../mke_api"
       relative: true
     source: path
     version: "0.1.0"
-  mle_ui:
+  mke_ui:
     dependency: "direct main"
     description:
-      path: "../mle_ui"
+      path: "../mke_ui"
       relative: true
     source: path
     version: "0.1.0"

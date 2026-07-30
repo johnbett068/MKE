@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:mle_ui/mle_ui.dart';
+import 'package:mke_ui/mke_ui.dart';
 
 import 'customer_flow.dart';
 
@@ -13,7 +13,7 @@ class CustomerApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'MKE',
-        theme: mleTheme(),
+        theme: mkeTheme(),
         home: const CustomerFlowScreen(),
       );
 }
@@ -52,7 +52,7 @@ class CustomerFlowScreen extends ConsumerWidget {
                 right: 16,
                 bottom: 18,
                 child: Material(
-                  color: MleColors.danger,
+                  color: MkeColors.danger,
                   borderRadius: BorderRadius.circular(14),
                   child: Padding(
                     padding: const EdgeInsets.all(14),
@@ -160,7 +160,7 @@ class _AuthShell extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const MleBrandMark(size: 54),
+                      const MkeBrandMark(size: 54),
                       const SizedBox(height: 24),
                       Text(
                         title,
@@ -231,7 +231,7 @@ class _MapHomeState extends State<_MapHome> {
           right: 16,
           child: Row(
             children: [
-              const MleBrandMark(),
+              const MkeBrandMark(),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -253,7 +253,7 @@ class _MapHomeState extends State<_MapHome> {
                 children: [
                   _PlaceRow(
                     icon: Icons.my_location,
-                    color: MleColors.orange,
+                    color: MkeColors.orange,
                     label: pickup?.label ?? 'Tap map to choose pickup',
                     selected: !choosingDropoff,
                     onTap: () => setState(() => choosingDropoff = false),
@@ -261,7 +261,7 @@ class _MapHomeState extends State<_MapHome> {
                   const Divider(),
                   _PlaceRow(
                     icon: Icons.location_on,
-                    color: MleColors.blue,
+                    color: MkeColors.blue,
                     label: dropoff?.label ?? 'Tap map to choose destination',
                     selected: choosingDropoff,
                     onTap: () => setState(() => choosingDropoff = true),
@@ -315,7 +315,7 @@ class _PlaceRow extends StatelessWidget {
   Widget build(BuildContext context) => ListTile(
         onTap: onTap,
         selected: selected,
-        selectedTileColor: MleColors.orangeSoft,
+        selectedTileColor: MkeColors.orangeSoft,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         leading: Icon(icon, color: color),
         title: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -348,8 +348,8 @@ class _Quote extends StatelessWidget {
           child: ListTile(
             contentPadding: const EdgeInsets.all(18),
             leading: const CircleAvatar(
-              backgroundColor: MleColors.orangeSoft,
-              child: Icon(Icons.local_taxi, color: MleColors.orange),
+              backgroundColor: MkeColors.orangeSoft,
+              child: Icon(Icons.local_taxi, color: MkeColors.orange),
             ),
             title: const Text(
               'MKE Ride',
@@ -386,7 +386,7 @@ class _Quote extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                const Icon(Icons.lock_clock, color: MleColors.blue),
+                const Icon(Icons.lock_clock, color: MkeColors.blue),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -522,7 +522,7 @@ class _Tracking extends StatelessWidget {
                     Text(
                       'Start PIN  ${state.trip!.startPin}',
                       style: const TextStyle(
-                        color: MleColors.orange,
+                        color: MkeColors.orange,
                         fontWeight: FontWeight.w900,
                         fontSize: 20,
                       ),
@@ -557,7 +557,7 @@ class _Complete extends StatelessWidget {
               const CircleAvatar(
                 radius: 42,
                 backgroundColor: Color(0xFFE7F8EF),
-                child: Icon(Icons.check, size: 48, color: MleColors.success),
+                child: Icon(Icons.check, size: 48, color: MkeColors.success),
               ),
               const SizedBox(height: 22),
               Text(

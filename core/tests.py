@@ -29,3 +29,26 @@ class HealthEndpointTests(TestCase):
                 "checks": {"database": True, "redis": True},
             },
         )
+
+
+class CorsPreflightTests(TestCase):
+    def test_flutter_web_otp_preflight_allows_dynamic_localhost_origin(self):
+        response = self.client.options(
+            "/api/v1/accounts/phone-login/request/",
+            HTTP_ORIGIN="http://localhost:54321",
+            HTTP_ACCESS_CONTROL_REQUEST_METHOD="POST",
+            HTTP_ACCESS_CONTROL_REQUEST_HEADERS=(
+                "content-type, authorization, x-csrftoken"
+            ),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.headers["access-control-allow-origin"],
+            "http://localhost:54321",
+        )
+        self.assertIn("POST", response.headers["access-control-allow-methods"])
+        allowed_headers = response.headers["access-control-allow-headers"].lower()
+        self.assertIn("content-type", allowed_headers)
+        self.assertIn("authorization", allowed_headers)
+        self.assertIn("x-csrftoken", allowed_headers)

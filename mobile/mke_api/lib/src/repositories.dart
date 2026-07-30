@@ -10,14 +10,14 @@ class AuthRepository {
 
   Future<void> requestPhoneCode(String phoneNumber) async {
     await api.http.post<void>(
-      '/api/v1/accounts/phone-login/request/',
+      'accounts/phone-login/request/',
       data: {'identifier': phoneNumber},
     );
   }
 
   Future<AuthTokens> confirmPhoneCode(String phoneNumber, String code) async {
     final response = await api.http.post<Map<String, dynamic>>(
-      '/api/v1/accounts/phone-login/confirm/',
+      'accounts/phone-login/confirm/',
       data: {'phone_number': phoneNumber, 'code': code},
     );
     final tokens = AuthTokens(
@@ -35,7 +35,7 @@ class CustomerRepository {
 
   Future<FareQuoteDto> createQuote(Map<String, dynamic> request) async {
     final response = await api.http.post<Map<String, dynamic>>(
-      '/api/v1/trips/quotes/',
+      'trips/quotes/',
       data: request,
     );
     return FareQuoteDto.fromJson(response.data!);
@@ -43,7 +43,7 @@ class CustomerRepository {
 
   Future<LocationDto> resolveLocation(double latitude, double longitude) async {
     final response = await api.http.post<Map<String, dynamic>>(
-      '/api/v1/locations/resolve/',
+      'locations/resolve/',
       data: {'latitude': latitude, 'longitude': longitude},
     );
     return LocationDto.fromJson(response.data!);
@@ -54,7 +54,7 @@ class CustomerRepository {
     required String paymentMethod,
   }) async {
     final response = await api.http.post<Map<String, dynamic>>(
-      '/api/v1/trips/',
+      'trips/',
       data: {'quote_id': quoteId, 'payment_method': paymentMethod},
     );
     return TripDto.fromJson(response.data!);
@@ -62,14 +62,14 @@ class CustomerRepository {
 
   Future<TripDto> trip(int id) async {
     final response = await api.http.get<Map<String, dynamic>>(
-      '/api/v1/trips/$id/',
+      'trips/$id/',
     );
     return TripDto.fromJson(response.data!);
   }
 
   Future<TripDto> cancelTrip(int id, {String reason = ''}) async {
     final response = await api.http.post<Map<String, dynamic>>(
-      '/api/v1/trips/$id/cancel/',
+      'trips/$id/cancel/',
       data: {'reason': reason},
     );
     return TripDto.fromJson(response.data!);
@@ -92,14 +92,14 @@ class DriverRepository {
     double longitude,
   ) async {
     final response = await api.http.post<Map<String, dynamic>>(
-      '/api/v1/drivers/presence/$command/',
+      'drivers/presence/$command/',
       data: {'latitude': latitude, 'longitude': longitude},
     );
     return DriverProfileDto.fromJson(response.data!);
   }
 
   Future<List<TripOfferDto>> offers() async {
-    final response = await api.http.get<List<dynamic>>('/api/v1/trips/offers/');
+    final response = await api.http.get<List<dynamic>>('trips/offers/');
     return response.data!
         .map(
           (item) =>
@@ -110,28 +110,28 @@ class DriverRepository {
 
   Future<TripDto> acceptOffer(int offerId) async {
     final response = await api.http.post<Map<String, dynamic>>(
-      '/api/v1/trips/offers/$offerId/accept/',
+      'trips/offers/$offerId/accept/',
     );
     return TripDto.fromJson(response.data!);
   }
 
   Future<DriverProfileDto> goOffline() async {
     final response = await api.http.post<Map<String, dynamic>>(
-      '/api/v1/drivers/presence/offline/',
+      'drivers/presence/offline/',
     );
     return DriverProfileDto.fromJson(response.data!);
   }
 
   Future<Map<String, dynamic>> application() async {
     final response = await api.http.get<Map<String, dynamic>>(
-      '/api/v1/drivers/applications/me/',
+      'drivers/applications/me/',
     );
     return response.data!;
   }
 
   Future<List<Map<String, dynamic>>> documents() async {
     final response = await api.http.get<List<dynamic>>(
-      '/api/v1/drivers/documents/',
+      'drivers/documents/',
     );
     return response.data!
         .map((item) => Map<String, dynamic>.from(item as Map))
@@ -144,7 +144,7 @@ class DriverRepository {
     String documentNumber = '',
   }) async {
     final response = await api.http.post<Map<String, dynamic>>(
-      '/api/v1/drivers/documents/',
+      'drivers/documents/',
       data: FormData.fromMap({
         'document_type': documentType,
         'document_number': documentNumber,
@@ -167,7 +167,7 @@ class PaymentRepository {
     required String idempotencyKey,
   }) async {
     final response = await api.http.post<Map<String, dynamic>>(
-      '/api/v1/payments/mpesa/stk/',
+      'payments/mpesa/stk/',
       data: {
         'wallet_id': walletId,
         'purpose': purpose,
@@ -186,7 +186,7 @@ class WalletRepository {
 
   Future<List<WalletDto>> wallets() async {
     final response = await api.http.get<List<dynamic>>(
-      '/api/v1/wallets/my-wallets/',
+      'wallets/my-wallets/',
     );
     return response.data!
         .map(

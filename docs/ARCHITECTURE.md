@@ -2,7 +2,7 @@
 
 ## Current architecture
 
-MLE is a Django modular monolith. This is intentional for the pilot: shared
+MKE is a Django modular monolith. This is intentional for the pilot: shared
 transactions, one deployment, and fast iteration are more valuable than early
 microservices. Module boundaries must still be enforced so domains can be
 extracted later when scale or team ownership requires it.

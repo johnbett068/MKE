@@ -35,7 +35,7 @@ Their product-specific reconciliation policies must be defined before they
 settle balances.
 
 When `MPESA_CALLBACK_TOKEN` is configured, callbacks require the same value in
-`X-MLE-Callback-Token`. Production must additionally apply HTTPS, gateway/IP
+`X-MKE-Callback-Token`. Production must additionally apply HTTPS, gateway/IP
 controls where supported, monitoring, and reconciliation jobs.
 
 `MpesaGateway.initiate_b2c` is intentionally blocked until certificate-backed

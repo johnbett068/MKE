@@ -23,7 +23,7 @@ class ProviderUnavailable(APIException):
 
 def validate_callback_token(request):
     expected = settings.MPESA_CALLBACK_TOKEN
-    if expected and request.headers.get("X-MLE-Callback-Token") != expected:
+    if expected and request.headers.get("X-MKE-Callback-Token") != expected:
         raise PermissionDenied("Invalid callback token.")
 
 

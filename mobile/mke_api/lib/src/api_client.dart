@@ -1,8 +1,28 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import 'auth_session.dart';
+
+const _apiBaseUrlOverride = String.fromEnvironment(
+  'API_BASE_URL',
+  defaultValue: String.fromEnvironment('MKE_API_URL'),
+);
+
+String resolveApiBaseUrl() {
+  if (_apiBaseUrlOverride.isNotEmpty) {
+    return _normalizeApiBaseUrl(_apiBaseUrlOverride);
+  }
+  return kIsWeb
+      ? 'http://127.0.0.1:8001/api/v1'
+      : 'http://10.0.2.2:8001/api/v1';
+}
+
+String _normalizeApiBaseUrl(String baseUrl) {
+  final trimmed = baseUrl.replaceFirst(RegExp(r'/+$'), '');
+  return trimmed.endsWith('/api/v1') ? '$trimmed/' : '$trimmed/api/v1/';
+}
 
 class ApiFailure implements Exception {
   const ApiFailure(this.message, {this.statusCode, this.fields});
@@ -14,12 +34,12 @@ class ApiFailure implements Exception {
 }
 
 class ApiClient {
-  ApiClient({required String baseUrl, TokenStore? tokenStore, Dio? dio})
+  ApiClient({String? baseUrl, TokenStore? tokenStore, Dio? dio})
       : tokens = tokenStore ?? TokenStore(),
         http = dio ??
             Dio(
               BaseOptions(
-                baseUrl: baseUrl,
+                baseUrl: _normalizeApiBaseUrl(baseUrl ?? resolveApiBaseUrl()),
                 connectTimeout: const Duration(seconds: 12),
                 receiveTimeout: const Duration(seconds: 20),
                 headers: {'Accept': 'application/json'},
@@ -50,7 +70,7 @@ class ApiClient {
     ErrorInterceptorHandler handler,
   ) async {
     final request = error.requestOptions;
-    final alreadyRetried = request.extra['mle_retried'] == true;
+    final alreadyRetried = request.extra['mke_retried'] == true;
     if (error.response?.statusCode != 401 || alreadyRetried) {
       handler.reject(_normalize(error));
       return;
@@ -60,7 +80,7 @@ class ApiClient {
       handler.reject(_normalize(error));
       return;
     }
-    request.extra['mle_retried'] = true;
+    request.extra['mke_retried'] = true;
     request.headers['Authorization'] = 'Bearer ${refreshed.access}';
     try {
       handler.resolve(await http.fetch<dynamic>(request));
@@ -81,7 +101,7 @@ class ApiClient {
       }
       final refreshDio = Dio(BaseOptions(baseUrl: http.options.baseUrl));
       final response = await refreshDio.post<Map<String, dynamic>>(
-        '/api/v1/auth/token/refresh/',
+        'auth/token/refresh/',
         data: {'refresh': current.refresh},
       );
       final body = response.data!;
@@ -106,7 +126,7 @@ class ApiClient {
   Future<AuthTokens> login(String email, String password) async {
     try {
       final response = await http.post<Map<String, dynamic>>(
-        '/api/v1/auth/token/',
+        'auth/token/',
         data: {'email': email, 'password': password},
       );
       final session = AuthTokens(

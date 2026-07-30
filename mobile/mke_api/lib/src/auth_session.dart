@@ -29,8 +29,8 @@ class TokenStore {
   TokenStore({FlutterSecureStorage? storage})
       : _storage = storage ?? const FlutterSecureStorage();
 
-  static const _accessKey = 'mle_access_token';
-  static const _refreshKey = 'mle_refresh_token';
+  static const _accessKey = 'mke_access_token';
+  static const _refreshKey = 'mke_refresh_token';
   final FlutterSecureStorage _storage;
 
   Future<AuthTokens?> read() async {

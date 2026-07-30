@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mle_customer/main.dart';
+import 'package:mke_customer/main.dart';
 
 void main() {
   testWidgets('renders the customer phone authentication screen',

@@ -71,9 +71,9 @@ Last updated: 2026-07-30
 
 ### Mobile applications and shared packages
 
-- `mle_ui` defines the orange/blue design system, typography, controls, cards,
+- `mke_ui` defines the orange/blue design system, typography, controls, cards,
   inputs, and reusable brand elements.
-- `mle_api` supplies secure token persistence, serialized token refresh,
+- `mke_api` supplies secure token persistence, serialized token refresh,
   normalized API failures, DTO mappings, repositories, and reconnecting
   WebSocket infrastructure.
 - The customer Riverpod workflow covers OTP login, map pickup/drop-off, service
@@ -199,7 +199,7 @@ Last updated: 2026-07-30
   through an idempotent simulated M-Pesa STK callback.
 - Verification on 2026-07-30: Django system checks and migration-drift checks
   pass; the current 22-test suite includes the full lifecycle E2E scenario.
-  `flutter analyze --fatal-infos` passes with zero issues in `mle_ui`, `mle_api`,
+  `flutter analyze --fatal-infos` passes with zero issues in `mke_ui`, `mke_api`,
   `customer_app`, and `driver_app`; both application widget smoke tests pass.
   An isolated replay of runner generation, dependency resolution, analysis, and
   tests also passes for both applications.

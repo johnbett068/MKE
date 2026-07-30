@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [mle_ui, mle_api, customer_app, driver_app]
+        project: [mke_ui, mke_api, customer_app, driver_app]
     steps:
       - uses: actions/checkout@v6
       - uses: subosito/flutter-action@v2
@@ -68,8 +68,8 @@ jobs:
         working-directory: mobile/${{ matrix.app }}
         run: >-
           flutter build apk --release
-          --dart-define=MLE_API_URL=${{ vars.MLE_API_URL }}
-          --dart-define=MLE_WS_URL=${{ vars.MLE_WS_URL }}
+          --dart-define=MKE_API_URL=${{ vars.MKE_API_URL }}
+          --dart-define=MKE_WS_URL=${{ vars.MKE_WS_URL }}
       - uses: actions/upload-artifact@v4
         with:
           name: mke-${{ matrix.app }}-${{ github.ref_name }}-android
@@ -98,8 +98,8 @@ jobs:
         working-directory: mobile/${{ matrix.app }}
         run: >-
           flutter build ios --release --no-codesign
-          --dart-define=MLE_API_URL=${{ vars.MLE_API_URL }}
-          --dart-define=MLE_WS_URL=${{ vars.MLE_WS_URL }}
+          --dart-define=MKE_API_URL=${{ vars.MKE_API_URL }}
+          --dart-define=MKE_WS_URL=${{ vars.MKE_WS_URL }}
       - name: Archive runner bundle
         run: >-
           ditto -c -k --sequesterRsrc --keepParent

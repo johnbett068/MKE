@@ -1,4 +1,4 @@
-name: mle_customer
+name: mke_customer
 description: Making Life Easier customer application.
 version: 0.1.0+1
 publish_to: none
@@ -7,10 +7,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  mle_ui:
-    path: ../mle_ui
-  mle_api:
-    path: ../mle_api
+  mke_ui:
+    path: ../mke_ui
+  mke_api:
+    path: ../mke_api
   flutter_riverpod: ^2.6.1
   geolocator: ^13.0.2
   google_maps_flutter: ^2.10.0

@@ -2,11 +2,11 @@
 
 ## Product mission
 
-Making Life Easier (MLE) is an Africa-first service platform that lets a person
+Making Life Easier (MKE) is an Africa-first service platform that lets a person
 request transport, delivery, shopping, accommodation, rentals, work, and other
 trusted local services from one account.
 
-The long-term interface is conversational: a user describes an outcome, MLE
+The long-term interface is conversational: a user describes an outcome, MKE
 turns it into a structured request, presents the price and important choices,
 and acts only after explicit confirmation.
 

@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mle_driver/main.dart';
+import 'package:mke_driver/main.dart';
 
 void main() {
   testWidgets('renders the driver phone authentication screen', (tester) async {

@@ -1,6 +1,6 @@
 # Making Life Easier
 
-Making Life Easier (MLE) is an Africa-first super-app platform for mobility,
+Making Life Easier (MKE) is an Africa-first super-app platform for mobility,
 delivery, local commerce, rentals, hospitality, jobs, and trusted errands.
 
 The backend is a Django REST Framework modular monolith. The first supported

@@ -1,9 +1,9 @@
-# MLE Flutter applications
+# MKE Flutter applications
 
 - `customer_app`: customer mobility and future super-app entry point.
 - `driver_app`: driver availability, offers, active trips, and earnings.
-- `mle_ui`: shared orange-and-blue design tokens and components.
-- `mle_api`: shared Dio REST client, secure JWT persistence/refresh, DTOs,
+- `mke_ui`: shared orange-and-blue design tokens and components.
+- `mke_api`: shared Dio REST client, secure JWT persistence/refresh, DTOs,
   repositories, and reconnecting versioned WebSocket client.
 
 Flutter is not installed in the current workspace, so native Android/iOS runner
@@ -26,8 +26,8 @@ The apps use Riverpod provider containers and the shared network package.
 Build-time endpoints are supplied with:
 
 ```text
---dart-define=MLE_API_URL=https://api.example.com
---dart-define=MLE_WS_URL=wss://api.example.com
+--dart-define=MKE_API_URL=https://api.example.com
+--dart-define=MKE_WS_URL=wss://api.example.com
 ```
 
 Feature screen wiring, geolocation plugins, localization, and offline command

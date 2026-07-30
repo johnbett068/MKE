@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:mle_api/mle_api.dart';
+import 'package:mke_api/mke_api.dart';
 
 import 'app_providers.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-abstract final class MleColors {
+abstract final class MkeColors {
   static const orange = Color(0xFFFF8C00);
   static const orangeDark = Color(0xFFE67E00);
   static const orangeSoft = Color(0xFFFFF7ED);
@@ -14,32 +14,32 @@ abstract final class MleColors {
   static const danger = Color(0xFFD92D20);
 }
 
-ThemeData mleTheme() {
+ThemeData mkeTheme() {
   final scheme = ColorScheme.fromSeed(
-    seedColor: MleColors.orange,
-    primary: MleColors.orange,
-    secondary: MleColors.blue,
+    seedColor: MkeColors.orange,
+    primary: MkeColors.orange,
+    secondary: MkeColors.blue,
     surface: Colors.white,
-    error: MleColors.danger,
+    error: MkeColors.danger,
   );
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
-    scaffoldBackgroundColor: MleColors.canvas,
+    scaffoldBackgroundColor: MkeColors.canvas,
     fontFamily: 'Inter',
     textTheme: const TextTheme(
       headlineMedium: TextStyle(
-        color: MleColors.text,
+        color: MkeColors.text,
         fontSize: 28,
         fontWeight: FontWeight.w700,
       ),
       titleLarge: TextStyle(
-        color: MleColors.text,
+        color: MkeColors.text,
         fontSize: 20,
         fontWeight: FontWeight.w700,
       ),
-      bodyLarge: TextStyle(color: MleColors.text, height: 1.5),
-      bodyMedium: TextStyle(color: MleColors.muted, height: 1.45),
+      bodyLarge: TextStyle(color: MkeColors.text, height: 1.5),
+      bodyMedium: TextStyle(color: MkeColors.muted, height: 1.45),
     ),
     cardTheme: const CardThemeData(
       color: Colors.white,
@@ -47,12 +47,12 @@ ThemeData mleTheme() {
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(20)),
-        side: BorderSide(color: MleColors.border),
+        side: BorderSide(color: MkeColors.border),
       ),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: MleColors.orange,
+        backgroundColor: MkeColors.orange,
         foregroundColor: Colors.white,
         minimumSize: const Size.fromHeight(54),
         shape: RoundedRectangleBorder(
@@ -67,18 +67,18 @@ ThemeData mleTheme() {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: MleColors.border),
+        borderSide: const BorderSide(color: MkeColors.border),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: MleColors.border),
+        borderSide: const BorderSide(color: MkeColors.border),
       ),
     ),
   );
 }
 
-class MleBrandMark extends StatelessWidget {
-  const MleBrandMark({super.key, this.size = 44});
+class MkeBrandMark extends StatelessWidget {
+  const MkeBrandMark({super.key, this.size = 44});
   final double size;
 
   @override
@@ -91,7 +91,7 @@ class MleBrandMark extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [MleColors.orange, Color(0xFFFF6B35), MleColors.blue],
+          colors: [MkeColors.orange, Color(0xFFFF6B35), MkeColors.blue],
         ),
       ),
       alignment: Alignment.center,

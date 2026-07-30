@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mle_ui/mle_ui.dart';
+import 'package:mke_ui/mke_ui.dart';
 
 import 'driver_flow.dart';
 
@@ -14,7 +14,7 @@ class DriverApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'MKE Driver',
-        theme: mleTheme(),
+        theme: mkeTheme(),
         home: const DriverFlowScreen(),
       );
 }
@@ -50,7 +50,7 @@ class DriverFlowScreen extends ConsumerWidget {
                 right: 16,
                 bottom: 16,
                 child: Material(
-                  color: MleColors.danger,
+                  color: MkeColors.danger,
                   borderRadius: BorderRadius.circular(14),
                   child: Padding(
                     padding: const EdgeInsets.all(14),
@@ -152,7 +152,7 @@ class _Shell extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const MleBrandMark(size: 54),
+                    const MkeBrandMark(size: 54),
                     const SizedBox(height: 22),
                     Text(title,
                         style: Theme.of(context).textTheme.headlineMedium),
@@ -177,7 +177,7 @@ class _Verification extends StatelessWidget {
   Widget build(BuildContext context) => ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          const MleBrandMark(),
+          const MkeBrandMark(),
           const SizedBox(height: 20),
           Text(
             'Driver verification',
@@ -202,13 +202,13 @@ class _Verification extends StatelessWidget {
               child: ListTile(
                 leading: Icon(
                   item.$3,
-                  color: uploaded ? MleColors.success : MleColors.orange,
+                  color: uploaded ? MkeColors.success : MkeColors.orange,
                 ),
                 title: Text(item.$2),
                 subtitle:
                     Text(uploaded ? 'Uploaded — under review' : 'Required'),
                 trailing: uploaded
-                    ? const Icon(Icons.check_circle, color: MleColors.success)
+                    ? const Icon(Icons.check_circle, color: MkeColors.success)
                     : IconButton(
                         icon: const Icon(Icons.camera_alt),
                         onPressed: () => controller.uploadDocument(item.$1),
@@ -235,7 +235,7 @@ class _Duty extends StatelessWidget {
         children: [
           Row(
             children: [
-              const MleBrandMark(),
+              const MkeBrandMark(),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -255,8 +255,8 @@ class _Duty extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: state.online
-                    ? [MleColors.orange, const Color(0xFFFF6B35)]
-                    : [MleColors.navy, const Color(0xFF344054)],
+                    ? [MkeColors.orange, const Color(0xFFFF6B35)]
+                    : [MkeColors.navy, const Color(0xFF344054)],
               ),
               borderRadius: BorderRadius.circular(24),
             ),
@@ -289,7 +289,7 @@ class _Duty extends StatelessWidget {
                     Switch(
                       value: state.online,
                       activeTrackColor: Colors.white,
-                      activeThumbColor: MleColors.orange,
+                      activeThumbColor: MkeColors.orange,
                       onChanged: controller.toggleDuty,
                     ),
                   ],
@@ -323,7 +323,7 @@ class _Duty extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  const Icon(Icons.radar, color: MleColors.blue, size: 54),
+                  const Icon(Icons.radar, color: MkeColors.blue, size: 54),
                   const SizedBox(height: 14),
                   Text(
                     state.online
@@ -391,7 +391,7 @@ class _OfferOverlay extends StatelessWidget {
                   Text(
                     'KES ${offer.trip.quotedFare?.toStringAsFixed(0) ?? '—'}',
                     style: const TextStyle(
-                      color: MleColors.orange,
+                      color: MkeColors.orange,
                       fontSize: 28,
                       fontWeight: FontWeight.w900,
                     ),
@@ -428,7 +428,7 @@ class _CountdownPainter extends CustomPainter {
       math.pi * 2 * progress,
       false,
       Paint()
-        ..color = progress < .25 ? MleColors.danger : MleColors.orange
+        ..color = progress < .25 ? MkeColors.danger : MkeColors.orange
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
         ..strokeWidth = 8,
@@ -465,7 +465,7 @@ class _ActiveTripState extends State<_ActiveTrip> {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                const Icon(Icons.navigation, size: 50, color: MleColors.blue),
+                const Icon(Icons.navigation, size: 50, color: MkeColors.blue),
                 const SizedBox(height: 12),
                 Text(
                   status == 'in_progress'

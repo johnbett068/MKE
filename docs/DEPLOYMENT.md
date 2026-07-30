@@ -124,7 +124,7 @@ Use the official [Safaricom Daraja Developer Portal](https://developer.safaricom
 
    `https://api.mke.example/api/v1/payments/webhooks/mpesa/stk/`
 
-6. Configure the gateway/proxy to add `X-MLE-Callback-Token` with the exact
+6. Configure the gateway/proxy to add `X-MKE-Callback-Token` with the exact
    `MPESA_CALLBACK_TOKEN`. Safaricom cannot add this private header directly, so
    production should use a narrowly scoped callback gateway or remove this
    requirement only after implementing and verifying Safaricom IP/signature
@@ -200,8 +200,8 @@ flutter create --platforms=android .
 flutter pub get
 flutter analyze --fatal-infos
 flutter build apk --release \
-  --dart-define=MLE_API_URL=https://api.mke.example \
-  --dart-define=MLE_WS_URL=wss://api.mke.example
+  --dart-define=MKE_API_URL=https://api.mke.example \
+  --dart-define=MKE_WS_URL=wss://api.mke.example
 ```
 
 Repeat from `mobile/driver_app`. Follow Flutter's official
@@ -240,8 +240,8 @@ Compose rendering, and a production image build.
 Pushing a signed `v*` tag additionally creates Android APK and unsigned iOS
 runner artifacts. Configure repository variables:
 
-- `MLE_API_URL=https://api.mke.example`
-- `MLE_WS_URL=wss://api.mke.example`
+- `MKE_API_URL=https://api.mke.example`
+- `MKE_WS_URL=wss://api.mke.example`
 
 Release checklist:
 

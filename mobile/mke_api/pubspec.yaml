@@ -1,5 +1,5 @@
-name: mle_api
-description: Shared MLE REST, authentication, DTO, and real-time client layer.
+name: mke_api
+description: Shared MKE REST, authentication, DTO, and real-time client layer.
 version: 0.1.0
 environment:
   sdk: ">=3.3.0 <4.0.0"
